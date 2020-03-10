@@ -1,2 +1,97 @@
 // app global css in Sass form
 @import '~bulma/bulma'
+
+$grey: #f5f5f5
+
+.todo-list,
+.todo-stack-list
+  margin-bottom: 40px
+  background: #fff
+  border-radius: 3px
+  border: 1px solid #ccc
+  // box-shadow:
+  //   0 1.2px 3.1px rgba(0, 0, 0, 0.014),
+  //   0 3.4px 8.6px rgba(0, 0, 0, 0.02),
+  //   0 8.1px 20.8px rgba(0, 0, 0, 0.026),
+  //   0 27px 69px rgba(0, 0, 0, 0.04)
+  //
+  // transition: 0.3s box-shadow ease-in-out
+
+  // &:hover
+  //   box-shadow:
+  //     0 1.1px 3.1px rgba(0, 0, 0, 0.024),
+  //     0 3.1px 8.6px rgba(0, 0, 0, 0.035),
+  //     0 7.9px 20.8px rgba(0, 0, 0, 0.046),
+  //     0 27px 69px rgba(0, 0, 0, 0.07)
+  //
+  // }
+
+.todo-list-title
+  padding: 10px
+
+.todo-list-item
+  display: flex
+  justify-content: center
+  align-items: center
+  padding: 30px 20px
+  margin: 10px
+  border: 1px solid #ccc
+
+.create-todo-list
+  display: flex
+  justify-content: center
+  align-items: center
+  padding: 30px 20px
+  margin-bottom: 40px
+  border-radius: 3px
+  color: #dedede
+  border: 1px solid #ccc
+  background: #fff
+
+.create-todo-list
+  cursor: pointer
+  i
+    font-size: 30px
+    color: #ccc
+
+.stack-header
+  display: flex
+  align-items: center
+
+.stack-title
+  padding: 10px
+
+.todo-stack-list
+  padding: 20px
+
+.todo-stack-item
+  margin-bottom: 20px
+  padding-bottom: 10px
+  // background-color: #eee
+  // border-radius: 10px
+  border: 1px solid #ccc
+
+.stack-todo-item
+  padding: 20px 20px
+  margin: 10px
+  margin-bottom: 0
+  // background: #ddd
+  // border-radius: 10px
+  border: 1px solid #ccc
+
+.slide-right-enter-active,
+.slide-right-leave-active,
+.slide-left-enter-active,
+.slide-left-leave-active
+  overflow: hidden
+  transition: all .7s ease
+
+.slide-left-leave-to,
+.slide-right-enter
+  transform: translate(-100%)
+  opacity: 0
+
+.slide-left-enter,
+.slide-right-leave-to
+  transform: translate(100%)
+  opacity: 0
