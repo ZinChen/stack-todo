@@ -14,11 +14,13 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "bulma": "^0.8.0",
+    "firebase": "^7.10.0",
     "pug": "^2.0.4",
     "pug-loader": "^2.4.0",
     "pug-plain-loader": "^1.0.0",
     "quasar": "^1.0.0",
-    "vue-i18n": "^8.0.0"
+    "vue-i18n": "^8.0.0",
+    "vuefire": "^2.2.1"
   },
   "devDependencies": {
     "@quasar/app": "^1.0.0",
