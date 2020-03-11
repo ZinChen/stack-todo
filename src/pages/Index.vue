@@ -9,13 +9,6 @@
           li.list-item we have a page with ability to create and edit many todo lists
           li.list-item than we have another screen, where we can pick last todo from every list
 
-        button.button.is-info(
-          @click="resetStacks"
-        ) Reset stacks
-
-    .section
-      .container
-        | State: {{ state }}
     .section
       .container
           button.button.navigation(
@@ -48,6 +41,7 @@
               input.input.todo-list-title(
                 v-model="stack.title"
                 placeholder="Stack title"
+                @blur="updateStack(stack)"
               )
             .todo-list-items
               .todo-list-item(
@@ -55,6 +49,7 @@
               )
                 input.input.todo-list-item-content(
                   v-model="todo.title"
+                  @blur="updateStack(stack)"
                 )
               .todo-list-item.create-todo-list-item
                 input.input.todo-list-item-content(
@@ -83,40 +78,10 @@
 <script>
 import firebase from 'firebase'
 import { fireApp } from 'boot/fire.js'
+// import { differenceWith, isEqual } from 'lodash'
 import TodoStack from '../components/TodoStack'
 
-const defaultStacks = [
-  {
-    id: 1,
-    title: 'Stack title',
-    todos: [
-      {
-        title: 'This is todo'
-      },
-      {
-        title: 'This is todo too'
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: 'Stack 2 title',
-    todos: [
-      {
-        title: 'This is todo 2'
-      },
-      {
-        title: 'This is todo too 2'
-      }
-    ]
-  }
-]
-
-const clone = function (obj) {
-  return JSON.parse(JSON.stringify(obj))
-}
-
-// let stacks = clone(defaultStacks)
+// let stacks = []
 
 // if (localStorage.todoStacks) {
 //   // we are optimistic and don't use try/catch :D
@@ -133,11 +98,10 @@ export default {
         .collection('users')
         .doc(user.uid)
         .collection('stacks')
-      console.log('test here', state)
-      console.log('stacksRef', stacksRef)
+
       this.state = state
-      this.$bind('stacks', stacksRef)
       this.stacksRef = stacksRef
+      this.$bind('stacks', stacksRef)
     })
   },
   data () {
@@ -154,23 +118,18 @@ export default {
       })
 
       stack.newTodoTitle = ''
+
+      this.updateStack(stack)
     },
     createStack () {
-      const lastStackId = (this.stacks || []).length ? this.stacks[this.stacks.length - 1].id : 0
-      this.stacks.push({
-        id: lastStackId + 1,
+      this.stacksRef.add({
         title: '',
         todos: []
       })
     },
-    resetStacks () {
-      this.stacks = clone(defaultStacks)
-    },
-    updateStacks () {
-      // for test purposes only
-      // this.stacks.forEach(stack => {
-      //   this.stacksRef && this.stacksRef.add(stack)
-      // })
+    updateStack (stack) {
+      console.log('stack', stack)
+      this.stacksRef.doc(stack.id).update(stack)
     }
   },
   computed: {
@@ -182,9 +141,7 @@ export default {
     stacks: {
       deep: true,
       handler (stacks) {
-        // if (localStorage) {
-        //   localStorage.todoStacks = JSON.stringify(stacks)
-        // }
+        // let differ = differenceWith(stacks, oldStacks, isEqual)
       }
     }
   },
