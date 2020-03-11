@@ -1,5 +1,5 @@
 <template lang="pug">
-  layout
+  .layout
     .section
       .container
         p.title
@@ -15,6 +15,9 @@
 
     .section
       .container
+        | State: {{ state }}
+    .section
+      .container
           button.button.navigation(
             v-if="screen == 'editor'"
             @click="screen = 'stacks'"
@@ -25,6 +28,9 @@
             @click="screen = 'editor'"
           ) Go to Editor
 
+          button.button.navigation(
+            @click="updateStacks"
+          ) update stacks
     transition(
       :name="transitionName"
       mode="out-in"
@@ -75,6 +81,8 @@
 </template>
 
 <script>
+import firebase from 'firebase'
+import { fireApp } from 'boot/fire.js'
 import TodoStack from '../components/TodoStack'
 
 const defaultStacks = [
@@ -108,20 +116,35 @@ const clone = function (obj) {
   return JSON.parse(JSON.stringify(obj))
 }
 
-let stacks = clone(defaultStacks)
+// let stacks = clone(defaultStacks)
 
-if (localStorage.todoStacks) {
-  // we are optimistic and don't use try/catch :D
-  stacks = JSON.parse(localStorage.todoStacks)
-}
+// if (localStorage.todoStacks) {
+//   // we are optimistic and don't use try/catch :D
+//   stacks = JSON.parse(localStorage.todoStacks)
+// }
 
 export default {
   name: 'PageIndex',
   components: { TodoStack },
+  beforeCreate: function() {
+    this.$root.$on('state_update', (state) => {
+      const user = firebase.auth().currentUser
+      const stacksRef = fireApp.firestore()
+        .collection('users')
+        .doc(user.uid)
+        .collection('stacks')
+      console.log('test here', state)
+      console.log('stacksRef', stacksRef)
+      this.state = state
+      this.$bind('stacks', stacksRef)
+      this.stacksRef = stacksRef
+    })
+  },
   data () {
     return {
-      stacks,
-      screen: 'stacks'
+      stacks: [],
+      screen: 'stacks',
+      state: 'i'
     }
   },
   methods: {
@@ -133,14 +156,21 @@ export default {
       stack.newTodoTitle = ''
     },
     createStack () {
+      const lastStackId = (this.stacks || []).length ? this.stacks[this.stacks.length - 1].id : 0
       this.stacks.push({
-        id: this.stacks[this.stacks.length - 1].id + 1,
+        id: lastStackId + 1,
         title: '',
         todos: []
       })
     },
     resetStacks () {
       this.stacks = clone(defaultStacks)
+    },
+    updateStacks () {
+      // for test purposes only
+      // this.stacks.forEach(stack => {
+      //   this.stacksRef && this.stacksRef.add(stack)
+      // })
     }
   },
   computed: {
@@ -152,11 +182,11 @@ export default {
     stacks: {
       deep: true,
       handler (stacks) {
-        if (localStorage) {
-          localStorage.todoStacks = JSON.stringify(stacks)
-        }
+        // if (localStorage) {
+        //   localStorage.todoStacks = JSON.stringify(stacks)
+        // }
       }
     }
-  }
+  },
 }
 </script>
