@@ -19,12 +19,17 @@ export default {
       state: 'init'
     }
   },
+  // TODO: Try to use signup with login and password if it's not web
   beforeCreate: function() {
-    firebase.auth().onAuthStateChanged((user,) => {
+    firebase.auth().getRedirectResult()
+    firebase.auth().onAuthStateChanged((user) => {
       console.log('user', user)
+      // Read about auth types here: https://firebase.google.com/docs/auth/web/cordova
       if (!user && confirm('Auth?')) {
         const provider = new firebase.auth.GoogleAuthProvider()
-        firebase.auth().signInWithPopup(provider)
+        firebase.auth().signInWithRedirect(provider).then(function() {
+          return firebase.auth().getRedirectResult()
+        })
       } else {
         this.state = 'logged in'
         this.$root.$emit('state_update', this.state)

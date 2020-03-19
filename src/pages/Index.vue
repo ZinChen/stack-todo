@@ -21,9 +21,6 @@
             @click="screen = 'editor'"
           ) Go to Editor
 
-          button.button.navigation(
-            @click="updateStacks"
-          ) update stacks
     transition(
       :name="transitionName"
       mode="out-in"
