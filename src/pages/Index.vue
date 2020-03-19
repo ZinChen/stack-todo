@@ -90,22 +90,24 @@ export default {
   components: { TodoStack },
   beforeCreate: function() {
     this.$root.$on('state_update', (state) => {
-      const user = firebase.auth().currentUser
-      const stacksRef = fireApp.firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('stacks')
+      if (state === 'logged_in') {
+        const user = firebase.auth().currentUser
+        const stacksRef = fireApp.firestore()
+          .collection('users')
+          .doc(user.uid)
+          .collection('stacks')
 
-      this.state = state
-      this.stacksRef = stacksRef
-      this.$bind('stacks', stacksRef)
+        this.stacksRef = stacksRef
+        this.$bind('stacks', stacksRef)
+      } else {
+        this.unbind('stacks')
+      }
     })
   },
   data () {
     return {
       stacks: [],
       screen: 'stacks',
-      state: 'i'
     }
   },
   methods: {
