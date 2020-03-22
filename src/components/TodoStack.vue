@@ -4,8 +4,12 @@
       .stack-title {{ stack.title }}
       .stack-progress
         | {{ doneCount }} of {{ todosCount }} is done
+      //- @click="todoClick(currentTodo)"
     .stack-todo-item(
-      @click="todoClick(currentTodo)"
+      @touchstart="todoMoveStart"
+      @mousedown="todoMoveStart"
+      v-bind:style="todoStyle"
+      :class="{ 'no-transition': move }"
     )
       | todo {{ currentTodo.done }}
       .stack-todo-item-content {{ currentTodo.title }}
@@ -16,6 +20,15 @@
 export default {
   name: 'todo-stack',
   props: [ 'stack' ],
+  data: function() {
+    return {
+      move: false,
+      moveCoords: {
+        x: 0,
+        y: 0,
+      }
+    }
+  },
   computed: {
     currentTodo () {
       const currentTodo = this.stack.todos.find(todo => !todo.done) || {}
@@ -26,6 +39,11 @@ export default {
     },
     doneCount () {
       return this.stack.todos.filter(todo => todo.done).length
+    },
+    todoStyle () {
+      return {
+        transform: `translate(${this.moveCoords.x}px, ${this.moveCoords.y}px)`
+      }
     }
   },
   methods: {
@@ -36,6 +54,31 @@ export default {
       if (todoIndex > -1) {
         this.$set(this.stack.todos[todoIndex], 'done', true)
       }
+    },
+    todoMoveStart (e) {
+      this.move = true
+      this.initialMove = {
+        x: e.pageX,
+        y: e.pageY,
+      }
+      console.log('start', e)
+
+      document.addEventListener('mousemove', this.todoMove)
+      document.addEventListener('touchmove', this.todoMove)
+      document.addEventListener('mouseup', this.todoMoveEnd, false)
+      document.addEventListener('touchend', this.todoMoveEnd, false)
+      // document.addEventListener('mouseout', this.todoMoveEnd, false)
+    },
+    todoMove (e) {
+      this.moveCoords.x = e.pageX - this.initialMove.x
+      // this.moveCoords.y = e.pageY - this.initialMove.y
+    },
+    todoMoveEnd (e) {
+      this.moveCoords.x = 0
+      this.moveCoords.y = 0
+      this.move = false
+      document.removeEventListener('mousemove', this.todoMove)
+      document.removeEventListener('touchmove', this.todoMove)
     }
   }
 }
