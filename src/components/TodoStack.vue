@@ -1,12 +1,14 @@
 <template lang="pug">
-  .todo-stack-item
+  .todo-stack-item(
+    :class="{ 'perspective': move }"
+  )
     .stack-header
       .stack-title {{ stack.title }}
       .stack-progress
         | {{ doneCount }} of {{ todosCount }} is done
       //- @click="todoClick(currentTodo)"
     .stack-todo-item(
-      @touchstart="todoMoveStart"
+      @touchstart="todoMoveTouchStart"
       @mousedown="todoMoveStart"
       v-bind:style="todoStyle"
       :class="{ 'no-transition': move }"
@@ -17,6 +19,8 @@
 </template>
 
 <script>
+import clamp from 'lodash/clamp'
+
 export default {
   name: 'todo-stack',
   props: [ 'stack' ],
@@ -24,8 +28,8 @@ export default {
     return {
       move: false,
       moveCoords: {
-        x: 0,
-        y: 0,
+        dx: 0,
+        dy: 0,
       },
       initialMove: {
         el: {
@@ -46,11 +50,28 @@ export default {
       return this.stack.todos.filter(todo => todo.done).length
     },
     todoStyle () {
+      if ( !this.move ) {
+        return {}
+      }
+
+      const {
+        dx,
+        dy
+      } = this.moveCoords
+      let rotateX = dy * Math.abs(dy / 2) / this.initialMove.el.height
+      rotateX *= -1 // in another direction
+      rotateX = clamp(rotateX, -20 , 20)
+
+      let rotateY = dx * Math.abs(dx / 2) / this.initialMove.el.width
+      rotateY = clamp(rotateY, -25, 25)
+
+      let dz = this.move ? 30 : 0
+
       return {
         transform: `
-          translate( ${this.moveCoords.x}px, ${ this.moveCoords.y}px )
-          rotateX( ${this.moveCoords.x / this.initialMove.el.width * 50}deg )
-          rotateY( ${this.moveCoords.y / this.initialMove.el.height * 50}deg )
+          translate3d( ${dx}px, ${dy}px, ${dz}px )
+          rotateY( ${rotateY}deg )
+          rotateX( ${rotateX}deg )
         `
       }
     }
@@ -77,21 +98,45 @@ export default {
       console.log('start', e)
 
       document.addEventListener('mousemove', this.todoMove)
-      document.addEventListener('touchmove', this.todoMove)
       document.addEventListener('mouseup', this.todoMoveEnd, false)
-      document.addEventListener('touchend', this.todoMoveEnd, false)
       // document.addEventListener('mouseout', this.todoMoveEnd, false)
     },
+    // TODO: only on long touch
+    todoMoveTouchStart (e) {
+      const touch = e.touches[0]
+      const target = (e.targetTouches[0] || {}).target
+
+      e.preventDefault()
+
+      this.move = true
+      this.initialMove = {
+        x: touch.pageX,
+        y: touch.pageY,
+        el: {
+          width: target.offsetWidth,
+          height: target.offsetHeight,
+        }
+      }
+
+      document.addEventListener('touchmove', this.todoMoveTouch)
+      document.addEventListener('touchend', this.todoMoveEnd, false)
+    },
     todoMove (e) {
-      this.moveCoords.x = e.pageX - this.initialMove.x
-      this.moveCoords.y = e.pageY - this.initialMove.y
+      this.moveCoords.dx = e.pageX - this.initialMove.x
+      this.moveCoords.dy = e.pageY - this.initialMove.y
+    },
+    todoMoveTouch (e) {
+      const touch = e.touches[0]
+      this.moveCoords.dx = touch.pageX - this.initialMove.x
+      this.moveCoords.dy = touch.pageY - this.initialMove.y
+      console.log('move', e)
     },
     todoMoveEnd (e) {
-      this.moveCoords.x = 0
-      this.moveCoords.y = 0
+      this.moveCoords.dx = 0
+      this.moveCoords.dy = 0
       this.move = false
       document.removeEventListener('mousemove', this.todoMove)
-      document.removeEventListener('touchmove', this.todoMove)
+      document.removeEventListener('touchmove', this.todoMoveTouch)
     }
   }
 }
