@@ -9,6 +9,8 @@ body
   -o-user-select: none
   -moz-user-select: -moz-none
   -webkit-user-select: none
+  perspective: 100vw
+
 
 .todo-list,
 .todo-stack-list
@@ -87,6 +89,7 @@ body
   border-radius: 10px
   // border: 1px solid #ccc
   transition: 0.3s all ease-in-out
+  outline: 1px solid transparent // for anti-aliasing
 
   .no-transition
     transition: none

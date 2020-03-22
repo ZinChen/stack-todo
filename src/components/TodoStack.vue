@@ -26,6 +26,11 @@ export default {
       moveCoords: {
         x: 0,
         y: 0,
+      },
+      initialMove: {
+        el: {
+          width: 0
+        }
       }
     }
   },
@@ -42,7 +47,11 @@ export default {
     },
     todoStyle () {
       return {
-        transform: `translate(${this.moveCoords.x}px, ${this.moveCoords.y}px)`
+        transform: `
+          translate( ${this.moveCoords.x}px, ${ this.moveCoords.y}px )
+          rotateX( ${this.moveCoords.x / this.initialMove.el.width * 50}deg )
+          rotateY( ${this.moveCoords.y / this.initialMove.el.height * 50}deg )
+        `
       }
     }
   },
@@ -60,6 +69,10 @@ export default {
       this.initialMove = {
         x: e.pageX,
         y: e.pageY,
+        el: {
+          width: e.target.offsetWidth,
+          height: e.target.offsetHeight,
+        }
       }
       console.log('start', e)
 
@@ -71,7 +84,7 @@ export default {
     },
     todoMove (e) {
       this.moveCoords.x = e.pageX - this.initialMove.x
-      // this.moveCoords.y = e.pageY - this.initialMove.y
+      this.moveCoords.y = e.pageY - this.initialMove.y
     },
     todoMoveEnd (e) {
       this.moveCoords.x = 0
