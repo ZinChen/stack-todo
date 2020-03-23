@@ -1,6 +1,6 @@
 <template lang="pug">
   .todo-stack-item(
-    :class="{ 'perspective': move }"
+    :class="{ 'perspective': isMove }"
   )
     .stack-header
       .stack-title {{ stack.title }}
@@ -11,7 +11,7 @@
       @touchstart="todoMoveTouchStart"
       @mousedown="todoMoveStart"
       v-bind:style="todoStyle"
-      :class="{ 'no-transition': move }"
+      :class="{ 'no-transition': isMoveDelay, 'fast-transition': isMove }"
     )
       | todo {{ currentTodo.done }}
       .stack-todo-item-content {{ currentTodo.title }}
@@ -26,7 +26,8 @@ export default {
   props: [ 'stack' ],
   data: function() {
     return {
-      move: false,
+      isMove: false,
+      isMoveDelay: false,
       moveCoords: {
         dx: 0,
         dy: 0,
@@ -50,7 +51,7 @@ export default {
       return this.stack.todos.filter(todo => todo.done).length
     },
     todoStyle () {
-      if ( !this.move ) {
+      if ( !this.isMove ) {
         return {}
       }
 
@@ -65,7 +66,7 @@ export default {
       let rotateY = dx * Math.abs(dx / 2) / this.initialMove.el.width
       rotateY = clamp(rotateY, -25, 25)
 
-      let dz = this.move ? 30 : 0
+      let dz = this.isMove ? 30 : 0
 
       return {
         transform: `
@@ -86,7 +87,10 @@ export default {
       }
     },
     todoMoveStart (e) {
-      this.move = true
+      this.isMove = true
+      setTimeout(() => {
+        this.isMoveDelay = true
+      }, 100)
       this.initialMove = {
         x: e.pageX,
         y: e.pageY,
@@ -108,7 +112,10 @@ export default {
 
       e.preventDefault()
 
-      this.move = true
+      this.isMove = true
+      setTimeout(() => {
+        this.isMoveDelay = true
+      }, 100)
       this.initialMove = {
         x: touch.pageX,
         y: touch.pageY,
@@ -129,12 +136,12 @@ export default {
       const touch = e.touches[0]
       this.moveCoords.dx = touch.pageX - this.initialMove.x
       this.moveCoords.dy = touch.pageY - this.initialMove.y
-      console.log('move', e)
     },
     todoMoveEnd (e) {
       this.moveCoords.dx = 0
       this.moveCoords.dy = 0
-      this.move = false
+      this.isMove = false
+      this.isMoveDelay = false
       document.removeEventListener('mousemove', this.todoMove)
       document.removeEventListener('touchmove', this.todoMoveTouch)
     }
