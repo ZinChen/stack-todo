@@ -44,6 +44,9 @@
               .todo-list-item(
                 v-for="todo in stack.todos"
               )
+                p(
+                  v-if="todo.done"
+                ) Done
                 input.input.todo-list-item-content(
                   v-model="todo.title"
                   @blur="updateStack(stack)"

@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import isEmpty from 'lodash/isEmpty'
 import firebase from 'firebase'
 
 const login = function() {
@@ -37,10 +38,10 @@ export default {
   },
   // TODO: Try to use signup with login and password if it's not web
   beforeCreate: function() {
+    // firebase.auth().getRedirectResult()
     firebase.auth().onAuthStateChanged((user) => {
-      console.log('user', user)
 
-      if (!user && confirm('Auth?')) {
+      if (isEmpty(user) && confirm('Auth?')) {
         login()
       } else if (user) {
         this.state = 'logged_in'
@@ -55,16 +56,6 @@ export default {
 
       // }
     })
-  },
-  computed: {
-    currentUser: function() {
-      console.log(' firebase.auth().currentUser.email',  (firebase.auth().currentUser || {}).email)
-      if (this.state === 'logged_in') {
-        return firebase.auth().currentUser || {}
-      } else {
-        return {}
-      }
-    }
   },
   methods: {
     logout: function() {
