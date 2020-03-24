@@ -12,57 +12,53 @@
             @click="screen = 'editor'"
           ) Go to Editor
 
-    transition(
-      :name="transitionName"
-      mode="out-in"
+    .section(
+      key="editor"
+      v-if="screen == 'editor'"
     )
-      .section(
-        key="editor"
-        v-if="screen == 'editor'"
-      )
-        .container.is-half.todo-lists
+      .container.todo-lists
 
-          .todo-list(
-            v-for="stack in stacks"
-          )
-            .todo-list-header
-              input.input.todo-list-title(
-                v-model="stack.title"
-                placeholder="Stack title"
+        .todo-list(
+          v-for="stack in stacks"
+        )
+          .todo-list-header
+            input.input.todo-list-title(
+              v-model="stack.title"
+              placeholder="Stack title"
+              @blur="updateStack(stack)"
+            )
+          .todo-list-items
+            .todo-list-item(
+              v-for="todo in stack.todos"
+            )
+              p(
+                v-if="todo.done"
+              ) Done
+              input.input.todo-list-item-content(
+                v-model="todo.title"
                 @blur="updateStack(stack)"
               )
-            .todo-list-items
-              .todo-list-item(
-                v-for="todo in stack.todos"
+            .todo-list-item.create-todo-list-item
+              input.input.todo-list-item-content(
+                v-model="stack.newTodoTitle",
+                placeholder="Type new todo"
+                v-on:keyup.enter="createTodo(stack)"
               )
-                p(
-                  v-if="todo.done"
-                ) Done
-                input.input.todo-list-item-content(
-                  v-model="todo.title"
-                  @blur="updateStack(stack)"
-                )
-              .todo-list-item.create-todo-list-item
-                input.input.todo-list-item-content(
-                  v-model="stack.newTodoTitle",
-                  placeholder="Type new todo"
-                  v-on:keyup.enter="createTodo(stack)"
-                )
 
-          .create-todo-list(
-            @click="createStack"
-          )
-            i.fa.fa-plus-circle
-      .section(
-        key="stacks"
-        v-if="screen == 'stacks'"
-      )
-        .container
-          .todo-stack-list
-            todo-stack(
-              v-for="stack in stacks"
-              :key="stack.id"
-              :stack="stack"
+        .create-todo-list(
+          @click="createStack"
+        )
+          i.fa.fa-plus-circle
+    .section(
+      key="stacks"
+      v-if="screen == 'stacks'"
+    )
+      .container
+        .todo-stack-list
+          todo-stack(
+            v-for="stack in stacks"
+            :key="stack.id"
+            :stack="stack"
             )
 </template>
 
