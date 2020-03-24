@@ -1,17 +1,21 @@
 <template lang="pug">
   #q-app
-    .container
-      .section
-        .row
-          | Current: {{ user.email }}
-        .row(
-          v-if="state == 'logged_in'"
+    q-toolbar
+      q-avatar.bg-grey
+        img.toolbar-avatar(
+          v-if="user.photoURL"
+          :src="user.photoURL"
         )
-          .button(@click='logout') Logout
-        .row(
-          v-else
-        )
-          .button(@click='login') Login
+        q-menu
+          q-list(dense)
+            q-item
+              q-item-section(
+                clickable
+                @click="test"
+              ) Logout (test)
+
+      q-toolbar-title
+        | {{ user.email }}
 
     router-view
 </template>
@@ -41,20 +45,13 @@ export default {
     // firebase.auth().getRedirectResult()
     firebase.auth().onAuthStateChanged((user) => {
 
-      if (isEmpty(user) && confirm('Auth?')) {
+      if (isEmpty(user)) {
         login()
       } else if (user) {
         this.state = 'logged_in'
         this.$root.$emit('state_update', this.state)
         this.user = user
       }
-      //  else {
-      //   const stacksRef = fireApp.firestore()
-      //     .collection('users')
-      //     .doc(user.uid)
-      //     .collection('stacks')
-
-      // }
     })
   },
   methods: {
@@ -67,7 +64,10 @@ export default {
         console.log('error on logout: ', error)
       });
     },
-    login
+    login,
+    test: function() {
+      console.log('just for test')
+    }
   }
 }
 </script>

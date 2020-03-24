@@ -2,15 +2,6 @@
   .layout
     .section
       .container
-        p.title
-         | my plan:
-        ul.list
-          li.list-item make stack todo
-          li.list-item we have a page with ability to create and edit many todo lists
-          li.list-item than we have another screen, where we can pick last todo from every list
-
-    .section
-      .container
           button.button.navigation(
             v-if="screen == 'editor'"
             @click="screen = 'stacks'"
@@ -29,7 +20,7 @@
         key="editor"
         v-if="screen == 'editor'"
       )
-        .container.todo-lists
+        .container.is-half.todo-lists
 
           .todo-list(
             v-for="stack in stacks"
