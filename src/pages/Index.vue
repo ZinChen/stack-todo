@@ -1,17 +1,5 @@
 <template lang="pug">
-  .layout
-    .section
-      .container
-          button.button.navigation(
-            v-if="screen == 'editor'"
-            @click="screen = 'stacks'"
-          ) Go to Stacks
-
-          button.button.navigation(
-            v-if="screen == 'stacks'"
-            @click="screen = 'editor'"
-          ) Go to Editor
-
+  q-layout.layout
     .section(
       key="editor"
       v-if="screen == 'editor'"
@@ -60,6 +48,15 @@
             :key="stack.id"
             :stack="stack"
             )
+    q-page-sticky(
+      position="bottom-right"
+      :offset="[25,25]"
+    )
+      q-btn(
+        fab
+        icon="edit"
+        @click="toggleView"
+      )
 </template>
 
 <script>
@@ -101,6 +98,13 @@ export default {
     }
   },
   methods: {
+    toggleView () {
+      if (this.screen === 'stacks') {
+        this.screen = 'editor'
+      } else {
+        this.screen = 'stacks'
+      }
+    },
     createTodo (stack) {
       stack.todos.push({
         title: stack.newTodoTitle
