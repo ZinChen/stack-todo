@@ -1,6 +1,6 @@
 <template lang="pug">
   #q-app
-    q-toolbar
+    q-toolbar.bg-white
       q-avatar.bg-grey
         img.toolbar-avatar(
           v-if="user.photoURL"

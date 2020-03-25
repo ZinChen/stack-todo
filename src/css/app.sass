@@ -10,6 +10,12 @@ body
   -moz-user-select: -moz-none
   -webkit-user-select: none
 
+#q-app
+  @media screen and (min-width: 1024px)
+    max-width: 768px
+    margin: 0 auto
+    box-shadow: 0 1.2px 2.5px rgba(0, 0, 0, 0.028), 0 2.9px 5.9px rgba(0, 0, 0, 0.04), 0 5.4px 11.1px rgba(0, 0, 0, 0.05), 0 9.6px 19.9px rgba(0, 0, 0, 0.06), 0 18px 37.2px rgba(0, 0, 0, 0.072), 0 43px 89px rgba(0, 0, 0, 0.1)
+
 .q-toolbar__title
   font-size: 16px
 
@@ -70,29 +76,37 @@ body
 .stack-header
   display: flex
   align-items: center
+  margin-bottom: 20px
+
+.stack-title,
+.stack-progress
+  font-size: 16px
+  font-weight: 600
+  letter-spacing: 2px
 
 .stack-title
-  padding: 10px
+  margin-right: 10px
 
-.todo-stack-item
+.stack-item
   margin-bottom: 20px
-  padding-bottom: 10px
-  // background-color: #eee
-  // border-radius: 10px
-  border: 1px solid #ccc
+  padding: 20px
+  border-radius: 3px
+  background: #f0f0f0
 
   &.perspective
     perspective: 100vw
 
 .stack-todo-item
-  padding: 20px 20px
-  margin: 10px
-  margin-bottom: 0
+  padding: 20px 30px
   color: $white
-  background-color: $link
-  border-radius: 10px
+  font-weight: 700
+  font-size: 16px
+  letter-spacing: 2px
+  border-radius: 5px
   // border: 1px solid #ccc
   transition: 0.3s all ease-in-out
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%)
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 2px 0px
   outline: 1px solid transparent // for anti-aliasing
 
   &.no-transition

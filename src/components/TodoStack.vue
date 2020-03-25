@@ -1,11 +1,11 @@
 <template lang="pug">
-  .todo-stack-item(
+  .stack-item(
     :class="{ 'perspective': isMove }"
   )
     .stack-header
       .stack-title {{ stack.title }}
       .stack-progress
-        | {{ doneCount }} of {{ todosCount }} is done
+        | {{ notDoneCount }} / {{ todosCount }} left
       //- @click="todoClick(currentTodo)"
     .stack-todo-item(
       @touchstart="todoMoveTouchStart"
@@ -13,7 +13,6 @@
       v-bind:style="todoStyle"
       :class="{ 'no-transition': isMoveDelay, 'fast-transition': isMove }"
     )
-      | todo
       .stack-todo-item-content {{ currentTodo.title }}
       //- finish - swipe, double-click, hold
 </template>
@@ -53,6 +52,9 @@ export default {
     },
     doneCount () {
       return this.stack.todos.filter(todo => todo.done).length
+    },
+    notDoneCount () {
+      return this.stack.todos.filter(todo => !todo.done).length
     },
     todoStyle () {
       if ( !this.isMove ) {
