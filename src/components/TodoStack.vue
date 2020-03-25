@@ -13,7 +13,8 @@
       v-bind:style="todoStyle"
       :class="{ 'no-transition': isMoveDelay, 'fast-transition': isMove }"
     )
-      .stack-todo-item-content {{ currentTodo.title }}
+      .stack-todo-item-content
+        | {{ currentTodo.title }}
       //- finish - swipe, double-click, hold
 </template>
 
@@ -76,12 +77,19 @@ export default {
 
       let dz = this.isMove ? 30 : 0
 
+      const transform = `
+        translate3d( ${dx}px, ${dy}px, ${dz}px )
+        rotateY( ${rotateY}deg )
+        rotateX( ${rotateX}deg )
+      `
+      const background = `
+        linear-gradient(135deg, #f6d365 ${-rotateY * 1.2}%, #fda085 ${100 - rotateY * 1.2}%)
+      `
+
+
       return {
-        transform: `
-          translate3d( ${dx}px, ${dy}px, ${dz}px )
-          rotateY( ${rotateY}deg )
-          rotateX( ${rotateX}deg )
-        `
+        transform,
+        background
       }
     }
   },
@@ -122,8 +130,8 @@ export default {
         x: e.pageX,
         y: e.pageY,
         el: {
-          width: e.target.offsetWidth,
-          height: e.target.offsetHeight,
+          width: e.target.parentNode.offsetWidth,
+          height: e.target.parentNode.offsetHeight,
         }
       }
 
@@ -137,9 +145,11 @@ export default {
       this.calcMoveCoords(touch)
     },
     calcMoveCoords (e) {
+      const limitX = this.initialMove.el.width / 2.3
+      const limitY = this.initialMove.el.height
       // TODO: limit dy and dx
-      this.moveCoords.dx = e.pageX - this.initialMove.x
-      this.moveCoords.dy = e.pageY - this.initialMove.y
+      this.moveCoords.dx = clamp(e.pageX - this.initialMove.x, -limitX, limitX)
+      this.moveCoords.dy = clamp(e.pageY - this.initialMove.y, -limitY, limitY)
     },
     todoMoveEnd (e) {
       if (!this.moveCoords.dx && !this.moveCoords.dy && !this.isMoveDelay) {
@@ -156,7 +166,7 @@ export default {
       document.removeEventListener('touchmove', this.todoMoveTouch)
     },
     applyMoveAction () {
-      const movedEnoughByX = Math.abs(this.moveCoords.dx) > this.initialMove.el.width / 2
+      const movedEnoughByX = Math.abs(this.moveCoords.dx) > this.initialMove.el.width / 3
       if (movedEnoughByX) {
         this.$set(this.currentTodo, 'done', true)
         // Because this is will not work

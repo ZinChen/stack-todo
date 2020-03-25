@@ -97,10 +97,14 @@ body
     perspective: 100vw
 
 .stack-todo-item
+  display: flex
+  flex-direction: column
+  justify-content: center
+  min-height: 90px
   padding: 20px 30px
   color: $white
   font-weight: 700
-  font-size: 16px
+  font-size: 18px
   letter-spacing: 2px
   border-radius: 5px
   // border: 1px solid #ccc
@@ -110,9 +114,11 @@ body
   outline: 1px solid transparent // for anti-aliasing
 
   &.no-transition
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 30px 0px
     transition: none
 
   &.fast-transition
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 30px 0px
     transition-duration: 0.1s
 
 .slide-right-enter-active,
