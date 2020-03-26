@@ -62,15 +62,7 @@
 <script>
 import firebase from 'firebase'
 import { fireApp } from 'boot/fire.js'
-// import { differenceWith, isEqual } from 'lodash'
 import TodoStack from '../components/TodoStack'
-
-// let stacks = []
-
-// if (localStorage.todoStacks) {
-//   // we are optimistic and don't use try/catch :D
-//   stacks = JSON.parse(localStorage.todoStacks)
-// }
 
 export default {
   name: 'PageIndex',
@@ -121,22 +113,9 @@ export default {
       })
     },
     updateStack (stack) {
-      console.log('stack', stack)
+      // console.log('stack', stack)
       this.stacksRef.doc(stack.id).update(stack)
     }
-  },
-  computed: {
-    transitionName () {
-      return this.screen === 'stacks' ? 'slide-left' : 'slide-right'
-    }
-  },
-  watch: {
-    stacks: {
-      deep: true,
-      handler (stacks) {
-        // let differ = differenceWith(stacks, oldStacks, isEqual)
-      }
-    }
-  },
+  }
 }
 </script>

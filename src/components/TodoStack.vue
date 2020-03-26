@@ -7,14 +7,15 @@
       .stack-progress
         | {{ notDoneCount }} / {{ todosCount }} left
       //- @click="todoClick(currentTodo)"
-    .stack-todo-item(
-      @touchstart="todoMoveTouchStart"
-      @mousedown="todoMoveStart"
-      v-bind:style="todoStyle"
-      :class="{ 'no-transition': isMoveDelay, 'fast-transition': isMove }"
-    )
-      .stack-todo-item-content
-        | {{ currentTodo.title }}
+    .stack-todo-wrapper
+      .stack-todo-item(
+        @touchstart="todoMoveTouchStart"
+        @mousedown="todoMoveStart"
+        v-bind:style="todoStyle"
+        :class="{ 'no-transition': isMoveDelay, 'fast-transition': isMove }"
+      )
+        .stack-todo-item-content
+          | {{ currentTodo.title }}
       //- finish - swipe, double-click, hold
 </template>
 
@@ -69,7 +70,7 @@ export default {
 
       // multiply 'dy' just to rid of linear values
       let rotateX = dy * Math.abs(dy / 2) / this.initialMove.el.height
-      rotateX *= -1 // in another direction
+      // rotateX *= -1 // in another direction
       rotateX = clamp(rotateX, -20 , 20)
 
       let rotateY = dx * Math.abs(dx / 2) / this.initialMove.el.width
@@ -105,16 +106,24 @@ export default {
 
       document.addEventListener('mousemove', this.todoMove)
       document.addEventListener('mouseup', this.todoMoveEnd, false)
+      window.navigation.vibrate(100)
       // document.addEventListener('mouseout', this.todoMoveEnd, false)
+
     },
     // TODO: only on long touch
     todoMoveTouchStart (e) {
       const touche = e.targetTouches[0]
-      this.initTodoMove(touche)
       e.preventDefault()
 
-      document.addEventListener('touchmove', this.todoMoveTouch)
-      document.addEventListener('touchend', this.todoMoveEnd, false)
+      this.waitLongTouch = setTimeout(() => {
+        this.initTodoMove(touche)
+
+        console.log('long touch happened')
+        document.addEventListener('touchmove', this.todoMoveTouch)
+        document.addEventListener('touchend', this.todoMoveEnd, false)
+        window.navigator.vibrate(100)
+        this.waitLongTouch = false
+      }, 1000)
     },
     initTodoMove (e) {
       this.isMove = true
@@ -155,6 +164,14 @@ export default {
       if (!this.moveCoords.dx && !this.moveCoords.dy && !this.isMoveDelay) {
         this.todoClick()
       }
+
+      if (this.waitLongTouch) {
+        console.log('long touch canceled')
+        clearTimeout(this.waitLongTouch)
+        return
+      }
+
+      console.log('long touch end')
 
       this.applyMoveAction()
       this.moveCoords.dx = 0
