@@ -21,6 +21,7 @@
     "pug-plain-loader": "^1.0.0",
     "quasar": "^1.0.0",
     "vue-i18n": "^8.0.0",
+    "vue2-touch-events": "^2.2.1",
     "vuefire": "^2.2.1"
   },
   "devDependencies": {

@@ -8,8 +8,9 @@
         | {{ notDoneCount }} / {{ todosCount }} left
       //- @click="todoClick(currentTodo)"
     .stack-todo-wrapper
+      //- @touchstart="todoMoveTouchStart"
       .stack-todo-item(
-        @touchstart="todoMoveTouchStart"
+        v-touch:touchhold="todoMoveTouchStart"
         @mousedown="todoMoveStart"
         v-bind:style="todoStyle"
         :class="{ 'no-transition': isMoveDelay, 'fast-transition': isMove }"
@@ -87,7 +88,6 @@ export default {
         linear-gradient(135deg, #f6d365 ${-rotateY * 1.2}%, #fda085 ${100 - rotateY * 1.2}%)
       `
 
-
       return {
         transform,
         background
@@ -106,24 +106,27 @@ export default {
 
       document.addEventListener('mousemove', this.todoMove)
       document.addEventListener('mouseup', this.todoMoveEnd, false)
-      window.navigation.vibrate(100)
       // document.addEventListener('mouseout', this.todoMoveEnd, false)
-
     },
     // TODO: only on long touch
     todoMoveTouchStart (e) {
       const touche = e.targetTouches[0]
-      e.preventDefault()
+      // e.preventDefault()
 
-      this.waitLongTouch = setTimeout(() => {
-        this.initTodoMove(touche)
+      // this.waitLongTouch = setTimeout(() => {
+      this.initTodoMove(touche)
 
-        console.log('long touch happened')
-        document.addEventListener('touchmove', this.todoMoveTouch)
-        document.addEventListener('touchend', this.todoMoveEnd, false)
-        window.navigator.vibrate(100)
-        this.waitLongTouch = false
-      }, 1000)
+      console.log('long touch happened')
+      document.addEventListener('touchmove', this.todoMoveTouch)
+      document.addEventListener('touchend', this.todoMoveEnd, false)
+      window.navigator.vibrate(100)
+      this.waitLongTouch = false
+      // }, 1000)
+    },
+    todoMoveTouchStartTest (e) {
+      console.log('test long touch happened', e)
+      document.addEventListener('touchmove', (e) => { console.log('test move') })
+      document.addEventListener('touchend', () => { console.log('test move end') }, false)
     },
     initTodoMove (e) {
       this.isMove = true
@@ -181,6 +184,8 @@ export default {
 
       document.removeEventListener('mousemove', this.todoMove)
       document.removeEventListener('touchmove', this.todoMoveTouch)
+      document.removeEventListener('touchend', this.todoMoveEnd)
+
     },
     applyMoveAction () {
       const movedEnoughByX = Math.abs(this.moveCoords.dx) > this.initialMove.el.width / 3
