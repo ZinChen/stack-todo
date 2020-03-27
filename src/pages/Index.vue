@@ -45,18 +45,43 @@
         .todo-stack-list
           todo-stack(
             v-for="stack in stacks"
+            v-on:update-stack="updateStack"
             :key="stack.id"
             :stack="stack"
-            )
+          )
     q-page-sticky(
       position="bottom-right"
       :offset="[25,25]"
     )
       q-btn(
         fab
-        icon="edit"
         @click="toggleView"
+        color="accent"
+        icon="edit"
       )
+      q-btn(
+        fab
+        @click="undoLastTodo"
+        color="accent"
+        icon="undo"
+      )
+      q-fab(
+        icon="more_horiz"
+        direction="up"
+        persistent=true
+        color="amber"
+      )
+        q-fab-action(
+          @click="toggleView"
+          color="accent"
+          icon="edit"
+        )
+        q-fab-action(
+          @click="undoLastTodo"
+          color="accent"
+          icon="undo"
+        )
+
 </template>
 
 <script>
@@ -99,7 +124,7 @@ export default {
     },
     createTodo (stack) {
       stack.todos.push({
-        title: stack.newTodoTitle
+        title: stack.newTodoTitle,
       })
 
       stack.newTodoTitle = ''
@@ -115,6 +140,25 @@ export default {
     updateStack (stack) {
       // console.log('stack', stack)
       this.stacksRef.doc(stack.id).update(stack)
+    },
+    undoLastTodo (e) {
+      let lastTodo = false
+      let lastStack = false
+      this.stacks.find(stack => {
+        stack.todos.find(todo => {
+          console.log('todo.doneDate', todo.doneDate)
+          console.log('todo.doneDate', todo.doneDate)
+          console.log('todo.doneDate > lastTodo.doneDate', todo.doneDate > lastTodo.doneDate)
+          if (!lastTodo || todo.done && todo.doneDate > lastTodo.doneDate) {
+            lastTodo = todo
+            lastStack = stack
+          }
+        })
+      })
+
+      lastTodo.done = false
+      lastTodo.doneDate = false
+      this.updateStack(lastStack)
     }
   }
 }

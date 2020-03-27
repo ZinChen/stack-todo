@@ -9,7 +9,6 @@
     .stack-todo-wrapper
       .stack-todo-item(
         v-touch:touchhold="todoMoveTouchStart"
-        @click="todoClick"
         v-bind:style="todoStyle"
         :class="{ 'no-transition': isMove }"
       )
@@ -111,10 +110,10 @@ export default {
 
       if (!e.touches) {
         document.addEventListener('mousemove', this.todoMove)
-        document.addEventListener('mouseup', this.todoMoveEnd, false)
+        document.addEventListener('mouseup', this.todoMoveEnd, { once: true })
       } else {
         console.log('long touch happened')
-        document.addEventListener('touchend', this.todoMoveEnd, false)
+        document.addEventListener('touchend', this.todoMoveEnd, { once: true })
         window.navigator.vibrate(100)
       }
 
@@ -152,10 +151,6 @@ export default {
       this.moveCoords.dy = clamp(e.pageY - this.initialMove.y, -limitY, limitY)
     },
     todoMoveEnd (e) {
-      if (!this.moveCoords.dx && !this.moveCoords.dy && !this.isMoveDelay) {
-        this.todoClick()
-      }
-
       console.log('long touch end')
 
       this.applyMoveAction()
@@ -169,7 +164,16 @@ export default {
     applyMoveAction () {
       const movedEnoughByX = Math.abs(this.moveCoords.dx) > this.initialMove.el.width / 3
       if (movedEnoughByX) {
-        this.$set(this.currentTodo, 'done', true)
+        const todo =  this.currentTodo
+
+        todo.done = true
+        todo.doneDate = new Date()
+
+        this.$emit('update-stack', this.stack)
+        // this.$set(this.currentTodo, 'done', true)
+        // this.$set(this.currentTodo, 'doneDate', new Date())
+        console.log('currentTodo', this.currentTodo)
+
         // Because this is will not work
         // this.currentTodo.done = true
       }
