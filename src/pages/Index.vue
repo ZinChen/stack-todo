@@ -17,14 +17,14 @@
             )
           .todo-list-items
             .todo-list-item(
-              v-for="todo in stack.todos"
+              v-for="todo in stackTodos(stack.id)"
             )
               p(
                 v-if="todo.done"
               ) Done
               input.input.todo-list-item-content(
                 v-model="todo.title"
-                @blur="updateStack(stack)"
+                @blur="updateTodo(todo)"
               )
             .todo-list-item.create-todo-list-item
               input.input.todo-list-item-content(
@@ -45,9 +45,10 @@
         .todo-stack-list
           todo-stack(
             v-for="stack in stacks"
-            v-on:update-stack="updateStack"
+            v-on:update-todo="updateTodo"
             :key="stack.id"
             :stack="stack"
+            :todos="stackTodos(stack.id)"
           )
 
     q-page-sticky(
@@ -96,6 +97,7 @@ export default {
   beforeCreate: function() {
     this.$root.$on('state_update', (state) => {
       if (state === 'logged_in') {
+        // Todo: track, when collections received
         const user = firebase.auth().currentUser
         const stacksRef = fireApp.firestore()
           .collection('users')
@@ -104,6 +106,14 @@ export default {
 
         this.stacksRef = stacksRef
         this.$bind('stacks', stacksRef)
+
+        const todosRef = fireApp.firestore()
+          .collection('users')
+          .doc(user.uid)
+          .collection('todos')
+
+        this.todosRef = todosRef
+        this.$bind('todos', todosRef)
       } else {
         this.unbind('stacks')
       }
@@ -111,8 +121,14 @@ export default {
   },
   data () {
     return {
+      todos: [],
       stacks: [],
       screen: 'stacks',
+    }
+  },
+  computed: {
+    stackTodos() {
+      return stackId => this.todos.filter(todo => todo.stackId === stackId )
     }
   },
   methods: {
@@ -124,18 +140,23 @@ export default {
       }
     },
     createTodo (stack) {
-      stack.todos.push({
+      const todo = {
+        stackId: stack.id,
         title: stack.newTodoTitle,
-      })
+        createdAt: new Date()
+      }
 
       stack.newTodoTitle = ''
 
+      this.todosRef.add(todo)
       this.updateStack(stack)
+    },
+    updateTodo (todo) {
+      this.todosRef.doc(todo.id).update(todo)
     },
     createStack () {
       this.stacksRef.add({
-        title: '',
-        todos: []
+        title: ''
       })
     },
     updateStack (stack) {
@@ -144,19 +165,15 @@ export default {
     },
     undoLastTodo (e) {
       let lastTodo = false
-      let lastStack = false
-      this.stacks.find(stack => {
-        stack.todos.find(todo => {
-          if (!lastTodo || todo.done && todo.doneDate > lastTodo.doneDate) {
-            lastTodo = todo
-            lastStack = stack
-          }
-        })
+      this.todos.find(todo => {
+        if (!lastTodo || todo.done && todo.doneDate > lastTodo.doneDate) {
+          lastTodo = todo
+        }
       })
 
       lastTodo.done = false
-      lastTodo.doneDate = false
-      this.updateStack(lastStack)
+      lastTodo.doneDate = firebase.firestore.FieldValue.delete()
+      this.updateTodo(lastTodo)
     }
   }
 }

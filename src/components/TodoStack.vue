@@ -6,15 +6,25 @@
       .stack-title {{ stack.title }}
       .stack-progress
         | {{ notDoneCount }} / {{ todosCount }} left
-    .stack-todo-wrapper
-      .stack-todo-item(
-        ref="todoRef"
-        v-touch:touchhold="todoMoveTouchStart"
-        v-bind:style="todoStyle"
-        :class="{ 'no-transition': isMove }"
+    .stack-todos
+      .stack-todo-wrapper(
+        v-for="todo in notDoneTodos"
+        :key="todo.id"
       )
-        .stack-todo-item-content
-          | {{ currentTodo.title }}
+        .stack-todo-item(
+          v-if="todo.title == currentTodo.title"
+          ref="todoRef"
+          v-touch:touchhold="todoMoveTouchStart"
+          v-bind:style="todoStyle"
+          class="current-todo"
+          :class="{ 'no-transition': isMove }"
+        )
+          .stack-todo-item-content {{ todo.title }}
+        .stack-todo-item(
+          v-else
+          :class="{ 'no-transition': isMove }"
+        )
+          .stack-todo-item-content {{ todo.title }}
       //- .stack-todo-item(
       //-   v-for="todoStyle"
       //- )
@@ -29,11 +39,10 @@ import { gsap } from 'gsap'
 
 export default {
   name: 'todo-stack',
-  props: [ 'stack' ],
+  props: [ 'stack', 'todos' ],
   data: function() {
     return {
       isMove: false,
-      isClick: false,
       moveCoords: {
         dx: 0,
         dy: 0,
@@ -53,20 +62,23 @@ export default {
   },
   computed: {
     currentTodo () {
-      const currentTodo = this.stack.todos.find(todo => !todo.done) || {}
+      const currentTodo = this.todos.find(todo => !todo.done) || {}
       return currentTodo
     },
     currentTodoIndex () {
-      return this.stack.todos.findIndex(todo => !todo.done)
+      return this.todos.findIndex(todo => !todo.done)
+    },
+    notDoneTodos () {
+      return this.todos.filter(todo => !todo.done)
     },
     todosCount () {
-      return this.stack.todos.length
+      return this.todos.length
     },
     doneCount () {
-      return this.stack.todos.filter(todo => todo.done).length
+      return this.todos.filter(todo => todo.done).length
     },
     notDoneCount () {
-      return this.stack.todos.filter(todo => !todo.done).length
+      return this.todos.filter(todo => !todo.done).length
     },
     todoStyle () {
       if (!this.isMove) {
@@ -105,7 +117,7 @@ export default {
   },
   methods: {
     todoClick () {
-      const lastDone = findLast(this.stack.todos, todo => todo.done)
+      const lastDone = findLast(this.todos, todo => todo.done)
       if (lastDone) {
         lastDone.done = false
       }
@@ -177,7 +189,6 @@ export default {
         gsap.to(todoRef, { rotationY: 90, x: targetX, onComplete: () => {
 
           this.isMove = false
-          this.isClick = false
           this.moveCoords.dx = 0
           this.moveCoords.dy = 0
 
@@ -185,8 +196,8 @@ export default {
           todo.done = true
           todo.doneDate = new Date()
 
-          this.$emit('update-stack', this.stack)
-          console.log('currentTodo', this.currentTodo)
+          this.$emit('update-todo', todo)
+          // console.log('currentTodo', this.currentTodo)
 
           // gsap.set(todoRef, { rotationY: 0, x: 0,  })
         }})
