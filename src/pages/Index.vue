@@ -49,38 +49,39 @@
             :key="stack.id"
             :stack="stack"
           )
+
     q-page-sticky(
       position="bottom-right"
       :offset="[25,25]"
     )
       q-btn(
         fab
-        @click="toggleView"
-        color="accent"
-        icon="edit"
-      )
-      q-btn(
-        fab
         @click="undoLastTodo"
         color="accent"
         icon="undo"
       )
-      q-fab(
-        icon="more_horiz"
-        direction="up"
-        persistent=true
-        color="amber"
+      q-btn(
+        fab
+        @click="toggleView"
+        color="accent"
+        icon="edit"
       )
-        q-fab-action(
-          @click="toggleView"
-          color="accent"
-          icon="edit"
-        )
-        q-fab-action(
-          @click="undoLastTodo"
-          color="accent"
-          icon="undo"
-        )
+      //- q-fab(
+      //-   icon="more_horiz"
+      //-   direction="up"
+      //-   persistent=true
+      //-   color="amber"
+      //- )
+      //-   q-fab-action(
+      //-     @click="toggleView"
+      //-     color="accent"
+      //-     icon="edit"
+      //-   )
+      //-   q-fab-action(
+      //-     @click="undoLastTodo"
+      //-     color="accent"
+      //-     icon="undo"
+      //-   )
 
 </template>
 
@@ -146,9 +147,6 @@ export default {
       let lastStack = false
       this.stacks.find(stack => {
         stack.todos.find(todo => {
-          console.log('todo.doneDate', todo.doneDate)
-          console.log('todo.doneDate', todo.doneDate)
-          console.log('todo.doneDate > lastTodo.doneDate', todo.doneDate > lastTodo.doneDate)
           if (!lastTodo || todo.done && todo.doneDate > lastTodo.doneDate) {
             lastTodo = todo
             lastStack = stack

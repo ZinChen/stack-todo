@@ -8,17 +8,24 @@
         | {{ notDoneCount }} / {{ todosCount }} left
     .stack-todo-wrapper
       .stack-todo-item(
+        ref="todoRef"
         v-touch:touchhold="todoMoveTouchStart"
         v-bind:style="todoStyle"
         :class="{ 'no-transition': isMove }"
       )
         .stack-todo-item-content
           | {{ currentTodo.title }}
+      //- .stack-todo-item(
+      //-   v-for="todoStyle"
+      //- )
+      //-   .stack-todo-item-content
+      //-     | {{ currentTodo.title }}
 </template>
 
 <script>
 import clamp from 'lodash/clamp'
 import findLast from 'lodash/findLast'
+import { gsap } from 'gsap'
 
 export default {
   name: 'todo-stack',
@@ -109,6 +116,7 @@ export default {
       this.initTodoMove(evt)
 
       if (!e.touches) {
+        console.log('mouse down')
         document.addEventListener('mousemove', this.todoMove)
         document.addEventListener('mouseup', this.todoMoveEnd, { once: true })
       } else {
@@ -154,28 +162,34 @@ export default {
       console.log('long touch end')
 
       this.applyMoveAction()
-      this.moveCoords.dx = 0
-      this.moveCoords.dy = 0
-      this.isMove = false
-      this.isClick = false
 
       document.removeEventListener('touchend', this.todoMoveEnd)
     },
     applyMoveAction () {
       const movedEnoughByX = Math.abs(this.moveCoords.dx) > this.initialMove.el.width / 3
       if (movedEnoughByX) {
-        const todo =  this.currentTodo
+        const { todoRef } = this.$refs
 
-        todo.done = true
-        todo.doneDate = new Date()
+        // moved lef
+        const directionSign = this.moveCoords.dx > 0 ? 1 : -1
+        const targetX = directionSign * this.initialMove.el.width - this.moveCoords.dx
 
-        this.$emit('update-stack', this.stack)
-        // this.$set(this.currentTodo, 'done', true)
-        // this.$set(this.currentTodo, 'doneDate', new Date())
-        console.log('currentTodo', this.currentTodo)
+        gsap.to(todoRef, { rotationY: 90, x: targetX, onComplete: () => {
 
-        // Because this is will not work
-        // this.currentTodo.done = true
+          this.isMove = false
+          this.isClick = false
+          this.moveCoords.dx = 0
+          this.moveCoords.dy = 0
+
+          const todo =  this.currentTodo
+          todo.done = true
+          todo.doneDate = new Date()
+
+          this.$emit('update-stack', this.stack)
+          console.log('currentTodo', this.currentTodo)
+
+          // gsap.set(todoRef, { rotationY: 0, x: 0,  })
+        }})
       }
     }
   }
