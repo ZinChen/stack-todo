@@ -22,14 +22,11 @@
           .stack-todo-item-content {{ todo.title }}
         .stack-todo-item(
           v-else
-          :class="{ 'no-transition': isMove }"
         )
           .stack-todo-item-content {{ todo.title }}
-      //- .stack-todo-item(
-      //-   v-for="todoStyle"
-      //- )
-      //-   .stack-todo-item-content
-      //-     | {{ currentTodo.title }}
+      .stack-todo-item.stack-todo-item-ghost
+        .stack-todo-item-content
+          | {{ currentTodo.title }}
 </template>
 
 <script>
@@ -69,7 +66,7 @@ export default {
       return this.todos.findIndex(todo => !todo.done)
     },
     notDoneTodos () {
-      return this.todos.filter(todo => !todo.done)
+      return this.todos.filter(todo => !todo.done).slice().reverse()
     },
     todosCount () {
       return this.todos.length
@@ -172,13 +169,16 @@ export default {
     },
     todoMoveEnd (e) {
       console.log('long touch end')
-
-      this.applyMoveAction()
-
       document.removeEventListener('touchend', this.todoMoveEnd)
+
+      this.isMove = false
+      this.applyMoveAction()
+      this.moveCoords.dx = 0
+      this.moveCoords.dy = 0
     },
     applyMoveAction () {
       const movedEnoughByX = Math.abs(this.moveCoords.dx) > this.initialMove.el.width / 3
+
       if (movedEnoughByX) {
         const { todoRef } = this.$refs
 
@@ -186,21 +186,19 @@ export default {
         const directionSign = this.moveCoords.dx > 0 ? 1 : -1
         const targetX = directionSign * this.initialMove.el.width - this.moveCoords.dx
 
-        gsap.to(todoRef, { rotationY: 90, x: targetX, onComplete: () => {
+        const todo =  this.currentTodo
+        todo.done = true
+        todo.doneDate = new Date()
 
-          this.isMove = false
-          this.moveCoords.dx = 0
-          this.moveCoords.dy = 0
+        this.$emit('update-todo', todo)
 
-          const todo =  this.currentTodo
-          todo.done = true
-          todo.doneDate = new Date()
+        console.log('currentTodo', this.currentTodo)
 
-          this.$emit('update-todo', todo)
-          // console.log('currentTodo', this.currentTodo)
 
-          // gsap.set(todoRef, { rotationY: 0, x: 0,  })
-        }})
+        // gsap.to(todoRef, { rotationY: 90, x: targetX, onComplete: () => {
+
+        //   // gsap.set(todoRef, { rotationY: 0, x: 0,  })
+        // }})
       }
     }
   }

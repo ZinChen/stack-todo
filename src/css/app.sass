@@ -103,16 +103,27 @@ body
   &.perspective
     perspective: 100vw
 
+.stack-todos
+  position: relative
+
+.stack-todo-wrapper
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+
 .stack-todo-item
   display: flex
   flex-direction: column
   justify-content: center
   min-height: 90px
   padding: 20px 30px
+
   color: $white
   font-weight: 700
   font-size: 18px
   letter-spacing: 2px
+
   border-radius: 5px
   // border: 1px solid #ccc
   transition: 0.3s all ease-in-out
@@ -127,6 +138,16 @@ body
   &.fast-transition
     box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 30px 0px
     transition-duration: 0.1s
+
+  // &:not(.current-todo)
+  //   position: absolute
+  //   top: 0
+  //   left: 0
+  //   right: 0
+
+  &.stack-todo-item-ghost
+    visibility: hidden
+
 
 .slide-right-enter-active,
 .slide-right-leave-active,
