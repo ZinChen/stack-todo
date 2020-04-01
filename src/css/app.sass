@@ -101,7 +101,7 @@ body
   background: #f0f0f0
 
   &.perspective
-    perspective: 100vw
+    perspective: 150vw
 
 .stack-todos
   position: relative
@@ -116,7 +116,7 @@ body
   display: flex
   flex-direction: column
   justify-content: center
-  min-height: 90px
+  height: 95px
   padding: 20px 30px
 
   color: $white
@@ -139,15 +139,17 @@ body
     box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 30px 0px
     transition-duration: 0.1s
 
-  // &:not(.current-todo)
-  //   position: absolute
-  //   top: 0
-  //   left: 0
-  //   right: 0
-
   &.stack-todo-item-ghost
     visibility: hidden
 
+  &:not(.current-todo)
+    transform: translateY(5px) scale(0.99)
+
+.stack-todo-item-content
+  overflow: hidden
+  display: -webkit-box
+  -webkit-box-orient: vertical
+  -webkit-line-clamp: 2
 
 .slide-right-enter-active,
 .slide-right-leave-active,

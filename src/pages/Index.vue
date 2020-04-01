@@ -22,10 +22,16 @@
               p(
                 v-if="todo.done"
               ) Done
-              input.input.todo-list-item-content(
-                v-model="todo.title"
-                @blur="updateTodo(todo)"
-              )
+              .field.has-addons
+                .control
+                  input.input.todo-list-item-content(
+                    v-model="todo.title"
+                    @blur="updateTodo(todo)"
+                  )
+                .control
+                  .button.is-error(
+                    @click="deleteTodo(todo)"
+                  ) X
             .todo-list-item.create-todo-list-item
               input.input.todo-list-item-content(
                 v-model="stack.newTodoTitle",
@@ -58,6 +64,7 @@
       q-btn(
         fab
         @click="undoLastTodo"
+        :disable="!lastUndone"
         color="accent"
         icon="undo"
       )
@@ -89,6 +96,7 @@
 <script>
 import firebase from 'firebase'
 import { fireApp } from 'boot/fire.js'
+import orderBy from 'lodash/orderBy'
 import TodoStack from '../components/TodoStack'
 
 export default {
@@ -128,7 +136,16 @@ export default {
   },
   computed: {
     stackTodos() {
-      return stackId => this.todos.filter(todo => todo.stackId === stackId )
+      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId ), 'createdAt', 'asc')
+    },
+    lastUndone () {
+      let lastTodo = { doneDate: 0 }
+      this.todos.find(todo => {
+        if (todo.done && todo.doneDate > lastTodo.doneDate) {
+          lastTodo = todo
+        }
+      })
+      return lastTodo.done && lastTodo
     }
   },
   methods: {
@@ -149,10 +166,12 @@ export default {
       stack.newTodoTitle = ''
 
       this.todosRef.add(todo)
-      this.updateStack(stack)
     },
     updateTodo (todo) {
       this.todosRef.doc(todo.id).update(todo)
+    },
+    deleteTodo (todo) {
+      this.todosRef.doc(todo.id).delete()
     },
     createStack () {
       this.stacksRef.add({
@@ -164,16 +183,13 @@ export default {
       this.stacksRef.doc(stack.id).update(stack)
     },
     undoLastTodo (e) {
-      let lastTodo = false
-      this.todos.find(todo => {
-        if (!lastTodo || todo.done && todo.doneDate > lastTodo.doneDate) {
-          lastTodo = todo
-        }
-      })
+      const lastTodo = this.lastUndone
 
-      lastTodo.done = false
-      lastTodo.doneDate = firebase.firestore.FieldValue.delete()
-      this.updateTodo(lastTodo)
+      if (lastTodo) {
+        lastTodo.done = false
+        lastTodo.doneDate = firebase.firestore.FieldValue.delete()
+        this.updateTodo(lastTodo)
+      }
     }
   }
 }

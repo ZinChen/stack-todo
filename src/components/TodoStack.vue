@@ -5,25 +5,30 @@
     .stack-header
       .stack-title {{ stack.title }}
       .stack-progress
-        | {{ notDoneCount }} / {{ todosCount }} left
+        | {{ notDoneCount }} / {{ todosCount }}
     .stack-todos
-      .stack-todo-wrapper(
-        v-for="todo in notDoneTodos"
-        :key="todo.id"
+      transition-group(
+        @enter="enterTodo"
+        @leave="leaveTodo"
+        :css="false"
       )
-        .stack-todo-item(
-          v-if="todo.title == currentTodo.title"
-          ref="todoRef"
-          v-touch:touchhold="todoMoveTouchStart"
-          v-bind:style="todoStyle"
-          class="current-todo"
-          :class="{ 'no-transition': isMove }"
+        .stack-todo-wrapper(
+          v-for="todo in notDoneTodos"
+          :key="todo.id"
         )
-          .stack-todo-item-content {{ todo.title }}
-        .stack-todo-item(
-          v-else
-        )
-          .stack-todo-item-content {{ todo.title }}
+          .stack-todo-item(
+            v-if="todo.title == currentTodo.title"
+            ref="todoRef"
+            v-touch:touchhold="todoMoveTouchStart"
+            v-bind:style="todoStyle"
+            class="current-todo"
+            :class="{ 'no-transition': isMove }"
+          )
+            .stack-todo-item-content {{ todo.title }}
+          .stack-todo-item(
+            v-else
+          )
+            .stack-todo-item-content {{ todo.title }}
       .stack-todo-item.stack-todo-item-ghost
         .stack-todo-item-content
           | {{ currentTodo.title }}
@@ -59,8 +64,7 @@ export default {
   },
   computed: {
     currentTodo () {
-      const currentTodo = this.todos.find(todo => !todo.done) || {}
-      return currentTodo
+      return this.todos.find(todo => !todo.done) || {}
     },
     currentTodoIndex () {
       return this.todos.findIndex(todo => !todo.done)
@@ -97,6 +101,9 @@ export default {
 
       let dz = this.isMove ? 30 : 0
 
+
+      // TODO: if direction - right, transform origin - left and vice-versa
+
       const transform = `
         translate3d( ${dx}px, ${dy}px, ${dz}px )
         rotateY( ${rotateY}deg )
@@ -113,6 +120,31 @@ export default {
     }
   },
   methods: {
+    enterTodo (el, done) {
+      console.log('enter', el)
+      done()
+    },
+    leaveTodo (el, done) {
+      const { todoRef } = this.$refs
+      const sign = this.directionSign
+      console.log('el', el)
+
+      // const targetX = sign * this.initialMove.el.width - this.moveCoords.dx
+
+      gsap.to(todoRef, {
+        rotationY: 90 * sign,
+        x: 500 * sign,
+        ease: 'sine.in',
+        duration: 0.3,
+        onComplete: () => {
+          // gsap.set(todoRef, { rotationY: 0, x: 0,  })
+          console.log('leaved')
+          done()
+        },
+      })
+      console.log('leave', el)
+
+    },
     todoClick () {
       const lastDone = findLast(this.todos, todo => todo.done)
       if (lastDone) {
@@ -162,7 +194,7 @@ export default {
 
     },
     calcMoveCoords (e) {
-      const limitX = this.initialMove.el.width / 2.3
+      const limitX = this.initialMove.el.width / 1.5
       const limitY = this.initialMove.el.height
       this.moveCoords.dx = clamp(e.pageX - this.initialMove.x, -limitX, limitX)
       this.moveCoords.dy = clamp(e.pageY - this.initialMove.y, -limitY, limitY)
@@ -180,25 +212,13 @@ export default {
       const movedEnoughByX = Math.abs(this.moveCoords.dx) > this.initialMove.el.width / 3
 
       if (movedEnoughByX) {
-        const { todoRef } = this.$refs
-
-        // moved lef
-        const directionSign = this.moveCoords.dx > 0 ? 1 : -1
-        const targetX = directionSign * this.initialMove.el.width - this.moveCoords.dx
+        this.directionSign = this.moveCoords.dx > 0 ? 1 : -1
 
         const todo =  this.currentTodo
         todo.done = true
         todo.doneDate = new Date()
 
         this.$emit('update-todo', todo)
-
-        console.log('currentTodo', this.currentTodo)
-
-
-        // gsap.to(todoRef, { rotationY: 90, x: targetX, onComplete: () => {
-
-        //   // gsap.set(todoRef, { rotationY: 0, x: 0,  })
-        // }})
       }
     }
   }
