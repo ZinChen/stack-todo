@@ -99,6 +99,7 @@ body
   padding: 20px
   border-radius: 3px
   background: #f0f0f0
+  perspective: 150vw
 
   &.perspective
     perspective: 150vw
@@ -111,6 +112,7 @@ body
   top: 0
   left: 0
   right: 0
+  transform-style: preserve-3d
 
 .stack-todo-item
   display: flex
@@ -126,18 +128,9 @@ body
 
   border-radius: 5px
   // border: 1px solid #ccc
-  transition: 0.3s all ease-in-out
   background: linear-gradient(135deg, #f6d365 0%, #fda085 100%)
   box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 2px 0px
   outline: 1px solid transparent // for anti-aliasing
-
-  &.no-transition
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 30px 0px
-    transition: none
-
-  &.fast-transition
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 30px 0px
-    transition-duration: 0.1s
 
   &.stack-todo-item-ghost
     visibility: hidden

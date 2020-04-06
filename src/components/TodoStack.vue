@@ -1,6 +1,6 @@
 <template lang="pug">
   .stack-item(
-    :class="{ 'perspective': isMove }"
+    :class="{ 'perspective': isTouch || isMove }"
   )
     .stack-header
       .stack-title {{ stack.title }}
@@ -25,7 +25,6 @@
             v-touch:touchhold="todoMoveTouchStart"
             v-bind:style="todoStyle"
             class="current-todo"
-            :class="{ 'no-transition': isMove }"
           )
             .stack-todo-item-content {{ todo.title }}
           .stack-todo-item(
@@ -48,6 +47,7 @@ export default {
   data: function() {
     return {
       isMove: false,
+      isTouch: false,
       todoProps: {
         dx: 0,
         dy: 0,
@@ -89,26 +89,19 @@ export default {
       return this.todos.filter(todo => !todo.done).length
     },
     todoStyle () {
+      return {}
+
       const {
         dx,
         dy,
-        dz,
         rotateX,
         rotateY
       } = this.todoProps
 
-      // TODO: if direction - right, transform origin - left and vice-versa
 
-      const transform = `
-        translate3d( ${dx}px, ${dy}px, ${dz}px )
-        rotateY( ${rotateY}deg )
-        rotateX( ${rotateX}deg )
-      `
-      const background = `
-        linear-gradient(135deg, #f6d365 ${-rotateY * 1.2}%, #fda085 ${100 - rotateY * 1.2}%)
-      `
 
       return {
+        boxShadow,
         transform,
         background
       }
@@ -116,16 +109,40 @@ export default {
   },
   methods: {
     touchStarted () {
-      // console.log('touch started')
+      console.log('touch started')
+      this.isTouch = true
+      // const { todoRef } = this.$refs
+      // gsap.to(todoRef, {
+      //   z: 30,
+      //   ease: 'power1.out',
+      //   duration: 0.1,
+      // })
     },
     touchEnded () {
-      // console.log('touch ended')
+      this.isTouch = false
+
+      const { todoRef } = this.$refs
+      // !this.isMove && gsap.to(todoRef, {
+      //   z: 0,
+      //   ease: 'power1.out',
+      //   duration: 0.1,
+      // })
+
+      console.log('touch ended')
     },
+    // GSAP animation TODO:
+    // - animate on move
+    // - animate on stop move
+    // - animate drop
+    // - animate next moving card
+
     handleSwipe (direction) {
-      if (!this.isMove && ['left', 'right'].includes(direction)) {
-        this.todoProps.directionSign = direction === 'right' ? 1 : -1
-        this.todoIsDone()
-      }
+      console.log('this is swipe')
+      // if (!this.isMove && ['left', 'right'].includes(direction)) {
+      //   this.todoProps.directionSign = direction === 'right' ? 1 : -1
+      //   this.isMove = true
+      //   this.todoIsDone()
+      // }
     },
     enterTodo (el, done) {
       console.log('enter', el)
@@ -137,16 +154,15 @@ export default {
       console.log('el', el)
       console.log('this.isMove', this.isMove)
 
-      // const targetX = sign * this.initialMove.el.width - this.todoProps.dx
-
-      gsap.to(todoRef, {
+      gsap.to(el, {
         rotationY: 90 * sign,
-        x: this.initialMove.el.width * sign,
+        x: 500 * sign,
         ease: 'power1.out',
-        duration: 0.7,
+        duration: 0.5,
         onComplete: () => {
           console.log('leaved')
           console.log('this.isMove', this.isMove)
+          this.isMove = false
           done()
         },
       })
@@ -171,7 +187,7 @@ export default {
       } else {
         console.log('long touch happened')
         document.addEventListener('touchend', this.todoMoveEnd, { once: true })
-        window.navigator.vibrate(100)
+        window.navigator.vibrate(30)
       }
     },
     initTodoMove (e) {
@@ -206,45 +222,95 @@ export default {
       const dy = clamp(e.pageY - this.initialMove.y, -limitY, limitY)
 
       this.setTodoStyle({ dx, dy })
+      this.animateTodoStyle()
+    },
+    todoMoveEnd (e) {
+      console.log('long touch end')
+      document.removeEventListener('touchend', this.todoMoveEnd)
+      document.removeEventListener('mousemove', this.todoMove)
+
+      this.applyMoveAction()
+      // animate moving back
+      this.setTodoStyle({ dx: 0, dy: 0})
+      this.animateTodoStyle({ callback: this.offMove })
     },
     setTodoStyle ({ dx, dy }) {
-      const notMoving = dx == 0 && dy == 0
-      if (notMoving) {
-        this.todoProps = {
-          ...this.todoProps,
-          dx,
-          dy,
-          dz: 0,
-          rotateX: 0,
-          rotateY: 0,
-        }
+      const isMoving = dx != 0 || dy != 0
+      let rotateX = 0
+      let rotateY = 0
+      let dz = 0
+      // rotateX = rotateY = dz = 0
+      let shadow = 1
+      // console.log('dx, dy', dx, dy)
+
+      if (isMoving) {
+        // multiply 'dy' just to rid of linear values
+        rotateX = dy * Math.abs(dy / 2) / this.initialMove.el.height
+        // rotateX *= -1 // in another direction
+        rotateX = clamp(rotateX, -20 , 20)
+
+        rotateY = dx * Math.abs(dx / 2) / this.initialMove.el.width
+        rotateY = clamp(rotateY, -25, 25)
+
+        dz = 20
+        shadow = 15
       }
 
-      // multiply 'dy' just to rid of linear values
-      let rotateX = dy * Math.abs(dy / 2) / this.initialMove.el.height
-      // rotateX *= -1 // in another direction
-      rotateX = clamp(rotateX, -20 , 20)
-
-      let rotateY = dx * Math.abs(dx / 2) / this.initialMove.el.width
-      rotateY = clamp(rotateY, -25, 25)
-
+      // TODO: if direction - right, transform origin - left and vice-versa
+      const transform = `
+        translate3d( ${dx}px, ${dy}px, ${0}px )
+        rotateY( ${rotateY}deg )
+        rotateX( ${rotateX}deg )
+      `
+      const background = `
+        linear-gradient(135deg, #f6d365 ${-rotateY * 1.2}%, #fda085 ${100 - rotateY * 1.2}%)
+      `
+      const boxShadow = `rgba(0, 0, 0, 0.15) 0px ${shadow}px ${shadow * 2}px 0px`
 
       this.todoProps = {
         ...this.todoProps,
         dx,
         dy,
-        dz: 30,
+        dz,
         rotateX,
-        rotateY
+        rotateY,
+        transform,
+        background,
+        boxShadow
       }
     },
-    todoMoveEnd (e) {
-      console.log('long touch end')
-      document.removeEventListener('touchend', this.todoMoveEnd)
+    animateTodoStyle ({ callback } = {}) {
+      const todoRef = this.$refs.todoRef[0]
 
-      this.isMove = false
-      this.applyMoveAction()
-      this.setTodoStyle({ dx: 0, dy: 0})
+      // TODO: use this and add GSAP.set for transform style and background initial value
+      const {
+        dx,
+        dy,
+        dz,
+        rotateX,
+        rotateY,
+        boxShadow,
+        background
+      } = this.todoProps
+
+      gsap.to(todoRef.parentNode, {
+        rotationY: rotateY,
+        rotationX: rotateX,
+        x: dx,
+        y: dy,
+        z: dz,
+        duration: 0.5,
+        onComplete: () => {
+          callback && callback()
+        }
+      })
+
+      gsap.to(todoRef, {
+        boxShadow,
+        background,
+        duration: 0.5,
+      })
+
     },
     applyMoveAction () {
       const movedEnoughByX = Math.abs(this.todoProps.dx) > this.initialMove.el.width / 3
@@ -253,6 +319,7 @@ export default {
         this.todoProps.directionSign = this.todoProps.dx > 0 ? 1 : -1
         this.todoIsDone()
       }
+
     },
     todoIsDone () {
       const todo =  this.currentTodo
@@ -260,6 +327,9 @@ export default {
       todo.doneDate = new Date()
 
       this.$emit('update-todo', todo)
+    },
+    offMove () {
+      this.isMove = false
     }
   }
 }
