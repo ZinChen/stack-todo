@@ -121,12 +121,6 @@ export default {
 
       console.log('touch ended')
     },
-    // GSAP animation TODO:
-    // - + animate on move
-    // - + animate on stop move
-    // - + animate drop
-    // - + animate next moving card
-
     handleSwipe (direction) {
       console.log('this is swipe')
       if (!this.isMove && ['left', 'right'].includes(direction)) {
@@ -140,49 +134,7 @@ export default {
       done()
     },
     leaveTodo (el, done) {
-      const todoRef = this.currentTodoRef
-      const sign = this.todoProps.directionSign
-      console.log('el', el)
-
-      // const rotationY = sign * (80 - sign * this.todoProps.rotateY)
-      // const x = sign * (el.offsetWidth * 1.5 - sign * this.todoProps.dx)
-
-      // console.log('this.todoProps.rotateY', this.todoProps.rotateY)
-      // console.log('rotationY', rotationY)
-
-      const notDoneTodos = this.todos.filter(todo => !todo.done)
-      const nextTodo = notDoneTodos.length > 0 && notDoneTodos[0]
-      const nextTodoRef = (this.$refs[`todoRef_${nextTodo.id}`] || [ false ])[0]
-      console.log('ref', nextTodoRef)
-      console.log('notDoneTodos', notDoneTodos)
-      console.log('notDoneTodos.length', notDoneTodos.length)
-      console.log('nextTodo.id', nextTodo.id)
-      console.log('this.$refs', this.$refs)
-
-      nextTodoRef && gsap.fromTo(nextTodoRef,
-      {
-        scale: 0.99,
-        y: 5,
-      }, {
-        scale: 1,
-        y: 0,
-        duration: 0.5
-      })
-
-      gsap.to(el, {
-        rotationY: sign * 77,
-        x: sign * el.offsetWidth * 0.7,
-        ease: 'power1.out',
-        duration: 0.5,
-        onComplete: () => {
-          // TODO: place it in todoIsDone callback
-          console.log('leaved')
-          this.isMove = false
-          this.computeTodoStyle({ dx: 0, dy: 0})
-
-          done()
-        },
-      })
+      this.animateAway({ el, done })
     },
     todoClick () {
       const lastDone = findLast(this.todos, todo => todo.done)
@@ -219,7 +171,6 @@ export default {
 
       this.computeTodoStyle({ dx: 0, dy: 0 })
       this.setDefaultStyle()
-      // console.log('start', e)
     },
     todoMove (e) {
       this.computeTodoCoords(e)
@@ -245,18 +196,29 @@ export default {
       console.log('long touch end')
       document.removeEventListener('touchend', this.todoMoveEnd)
       document.removeEventListener('mousemove', this.todoMove)
+      const movedEnoughByX = Math.abs(this.todoProps.dx) > this.initialMove.el.width / 3
 
-      this.applyMoveAction()
-      // animate moving back
+      if (movedEnoughByX) {
+        this.todoProps.directionSign = this.todoProps.dx > 0 ? 1 : -1
+        this.todoIsDone()
+      } else {
+        this.computeTodoStyle({ dx: 0, dy: 0})
+        this.animateTodoStyle({ callback: this.turnoffMove })
+      }
+    },
+    todoIsDone () {
+      const todo =  this.currentTodo
+      todo.done = true
+      todo.doneDate = new Date()
+
+      this.$emit('update-todo', todo)
     },
     computeTodoStyle ({ dx, dy }) {
       const isMoving = dx != 0 || dy != 0
       let rotateX = 0
       let rotateY = 0
       let dz = 0
-      // rotateX = rotateY = dz = 0
       let shadow = 1
-      // console.log('dx, dy', dx, dy)
 
       if (isMoving) {
         // multiply 'dy' just to rid of linear values
@@ -303,7 +265,6 @@ export default {
     animateTodoStyle ({ callback } = {}) {
       const todoRef = this.currentTodoRef
 
-      // TODO: use this and add GSAP.set for transform style and background initial value
       const {
         dx,
         dy,
@@ -333,26 +294,41 @@ export default {
       })
 
     },
-    applyMoveAction () {
-      const movedEnoughByX = Math.abs(this.todoProps.dx) > this.initialMove.el.width / 3
+    animateAway({ el, done }) {
+      const todoRef = this.currentTodoRef
+      const sign = this.todoProps.directionSign
+      console.log('el', el)
 
-      if (movedEnoughByX) {
-        this.todoProps.directionSign = this.todoProps.dx > 0 ? 1 : -1
-        this.todoIsDone()
-      } else {
-        this.computeTodoStyle({ dx: 0, dy: 0})
-        this.animateTodoStyle({ callback: this.offMove })
-      }
+      this.animateNextTodo()
 
+      gsap.to(el, {
+        rotationY: sign * 77,
+        x: sign * el.offsetWidth * 0.7,
+        ease: 'power1.out',
+        duration: 0.5,
+        onComplete: () => {
+          this.turnoffMove()
+          done()
+        },
+      })
     },
-    todoIsDone () {
-      const todo =  this.currentTodo
-      todo.done = true
-      todo.doneDate = new Date()
+    animateNextTodo () {
+      const notDoneTodos = this.todos.filter(todo => !todo.done)
+      const nextTodo = notDoneTodos.length > 0 && notDoneTodos[0]
+      const nextTodoRef = (this.$refs[`todoRef_${nextTodo.id}`] || [ false ])[0]
 
-      this.$emit('update-todo', todo)
+      nextTodoRef && gsap.fromTo(nextTodoRef,
+      {
+        scale: 0.99,
+        y: 5,
+      }, {
+        scale: 1,
+        y: 0,
+        duration: 0.5
+      })
     },
-    offMove () {
+    turnoffMove () {
+      this.computeTodoStyle({ dx: 0, dy: 0})
       this.isMove = false
     }
   }
