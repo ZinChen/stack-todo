@@ -52,6 +52,7 @@
           todo-stack(
             v-for="stack in stacks"
             v-on:update-todo="updateTodo"
+            v-on:swap-todo="swapTodo"
             :key="stack.id"
             :stack="stack"
             :todos="stackTodos(stack.id)"
@@ -136,7 +137,7 @@ export default {
   },
   computed: {
     stackTodos() {
-      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId ), 'createdAt', 'asc')
+      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId ), 'order', 'asc')
     },
     lastUndone () {
       let lastTodo = { doneDate: 0 }
@@ -149,6 +150,10 @@ export default {
     }
   },
   methods: {
+    lastTodoOfStack (stackId) {
+      const stackTodos = this.todos.filter(todo => todo.stackId === stackId)
+      return stackTodos.length && orderBy(stackTodos, 'order', 'desc')[0]
+    },
     toggleView () {
       if (this.screen === 'stacks') {
         this.screen = 'editor'
@@ -157,11 +162,15 @@ export default {
       }
     },
     createTodo (stack) {
+      const lastTodo = this.lastTodoOfStack(stack.id)
+      const order = lastTodo && lastTodo.order + 1
       const todo = {
         stackId: stack.id,
         title: stack.newTodoTitle,
-        createdAt: new Date()
+        createdAt: new Date(),
+        order
       }
+
 
       stack.newTodoTitle = ''
 
@@ -190,6 +199,23 @@ export default {
         lastTodo.doneDate = firebase.firestore.FieldValue.delete()
         this.updateTodo(lastTodo)
       }
+    },
+    swapTodo (stack) {
+      const stackTodos = orderBy(this.todos.filter(todo => todo.stackId === stack.id ), 'order', 'asc')
+      const currentTodo = stackTodos[0]
+
+      const batch = fireApp.firestore().batch()
+
+      stackTodos.forEach((todo) => {
+        const isCurrentTodo = todo.order == currentTodo.order
+        if (isCurrentTodo) {
+          batch.update(this.todosRef.doc(currentTodo.id), { order: 0 })
+        } else {
+          batch.update(this.todosRef.doc(currentTodo.id), { order: todo.order + 1})
+        }
+      })
+
+      batch.commit()
     }
   }
 }

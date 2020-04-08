@@ -2,6 +2,12 @@
   .layout
     .section
       .container
+        q-btn(
+          color="amber"
+          @click="addOrders"
+        ) Add orders
+    .section
+      .container
         .stacks Stacks:
           p {{stacks}}
 
@@ -12,6 +18,7 @@
 <script>
 import firebase from 'firebase'
 import { fireApp } from 'boot/fire.js'
+import orderBy from 'lodash/orderBy'
 
 export default {
   name: 'PageAdmin',
@@ -47,6 +54,14 @@ export default {
     }
   },
   methods: {
+    addOrders () {
+      this.stacks.forEach(stack => {
+        orderBy(this.todos.filter(todo => todo.stackId === stack.id ), 'createdAt', 'asc').reduce((order, todo) => {
+          this.todosRef.doc(todo.id).update({ order })
+          return ++order
+        }, 0)
+      });
+    }
   }
 }
 </script>

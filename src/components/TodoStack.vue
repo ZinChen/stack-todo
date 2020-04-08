@@ -1,11 +1,17 @@
 <template lang="pug">
   .stack-item(
-    :class="{ 'perspective': isTouch || isMove }"
+    :class="{ 'active-stack': isTouch || isMove }"
   )
     .stack-header
       .stack-title {{ stack.title }}
       .stack-progress
         | {{ notDoneCount }} / {{ todosCount }}
+      q-btn(
+        round
+        @click="animateSwapTodo"
+        color="amber"
+        icon="cached"
+      )
     .stack-todos
       transition-group(
         @enter="enterTodo"
@@ -137,10 +143,8 @@ export default {
       this.animateAway({ el, done })
     },
     todoClick () {
+      // TODO: this is just example, remove if useless
       const lastDone = findLast(this.todos, todo => todo.done)
-      if (lastDone) {
-        lastDone.done = false
-      }
     },
     todoMoveTouchStart (e) {
       const evt = e.touches ? e.touches[0] : e
@@ -197,10 +201,13 @@ export default {
       document.removeEventListener('touchend', this.todoMoveEnd)
       document.removeEventListener('mousemove', this.todoMove)
       const movedEnoughByX = Math.abs(this.todoProps.dx) > this.initialMove.el.width / 3
+      const movedEnoughByY = Math.abs(this.todoProps.dy) > this.initialMove.el.height / 2
 
       if (movedEnoughByX) {
         this.todoProps.directionSign = this.todoProps.dx > 0 ? 1 : -1
         this.todoIsDone()
+      } else if (movedEnoughByY) {
+        this.animateSwapTodo()
       } else {
         this.computeTodoStyle({ dx: 0, dy: 0})
         this.animateTodoStyle({ callback: this.turnoffMove })
@@ -242,7 +249,7 @@ export default {
       const background = `
         linear-gradient(135deg, #f6d365 ${-rotateY * 1.2}%, #fda085 ${100 - rotateY * 1.2}%)
       `
-      const boxShadow = `rgba(0, 0, 0, 0.15) 0px ${shadow}px ${shadow * 2}px 0px`
+      const boxShadow = this.boxShadow(shadow)
 
       this.todoProps = {
         ...this.todoProps,
@@ -299,7 +306,7 @@ export default {
       const sign = this.todoProps.directionSign
       console.log('el', el)
 
-      this.animateNextTodo()
+      this.animateNextTodo(this.currentTodoRef)
 
       gsap.to(el, {
         rotationY: sign * 77,
@@ -312,11 +319,7 @@ export default {
         },
       })
     },
-    animateNextTodo () {
-      const notDoneTodos = this.todos.filter(todo => !todo.done)
-      const nextTodo = notDoneTodos.length > 0 && notDoneTodos[0]
-      const nextTodoRef = (this.$refs[`todoRef_${nextTodo.id}`] || [ false ])[0]
-
+    animateNextTodo (nextTodoRef) {
       nextTodoRef && gsap.fromTo(nextTodoRef,
       {
         scale: 0.99,
@@ -326,6 +329,59 @@ export default {
         y: 0,
         duration: 0.5
       })
+    },
+    animateSwapTodo () {
+      if (this.todos.length < 2) {
+        console.log('TODO: prevent swap if one or less todo')
+        return
+      }
+
+      const todoRef = this.currentTodoRef
+      const todoRefWrapper = (todoRef || {}).parentNode
+      const nextTodoRef = ((this.$refs[`todoRef_${this.todos[1].id}`] || [])[0])
+
+      this.isMove = true
+      gsap.timeline()
+        .to( todoRef, {
+          duration: 0.5,
+          ease: 'power2.in',
+          boxShadow: this.boxShadow(15),
+          onComplete: () => {
+            this.animateNextTodo(nextTodoRef)
+            this.$emit('swap-todo', this.stack)
+          }
+        })
+        .to( todoRef, {
+          duration: 0.5,
+          ease: 'power2.out',
+          scale: 0.99,
+          y: 5,
+          boxShadow: this.boxShadow(1),
+          onComplete: () => {
+            this.isMove = false
+          }
+        })
+
+      gsap.timeline()
+        .to( todoRefWrapper, {
+          duration: 0.5,
+          ease: 'power2.in',
+          x: 0,
+          y: todoRefWrapper.offsetHeight + 30,
+          z: 20,
+          rotationX: 10,
+        })
+        .to( todoRefWrapper, {
+          duration: 0.5,
+          ease: 'power2.out',
+          x: 0,
+          y: 0,
+          z: 0,
+          rotationX: 0,
+        })
+    },
+    boxShadow (value) {
+      return `rgba(0, 0, 0, 0.15) 0px ${value}px ${value * 2}px 0px`
     },
     turnoffMove () {
       this.computeTodoStyle({ dx: 0, dy: 0})
