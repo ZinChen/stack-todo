@@ -3,15 +3,17 @@
     :class="{ 'active-stack': isTouch || isMove }"
   )
     .stack-header
-      .stack-title {{ stack.title }}
-      .stack-progress
-        | {{ notDoneCount }} / {{ todosCount }}
-      q-btn(
-        round
-        @click="animateSwapTodo"
-        color="amber"
-        icon="cached"
-      )
+      .stack-info
+        .stack-title {{ stack.title }}
+        .stack-progress
+          | {{ notDoneCount }} / {{ todosCount }}
+      .stack-buttons
+        q-btn(
+          round
+          @click="animateSwapTodo"
+          color="orange-4"
+          icon="cached"
+        )
     .stack-todos
       transition-group(
         @enter="enterTodo"
@@ -201,7 +203,7 @@ export default {
       document.removeEventListener('touchend', this.todoMoveEnd)
       document.removeEventListener('mousemove', this.todoMove)
       const movedEnoughByX = Math.abs(this.todoProps.dx) > this.initialMove.el.width / 3
-      const movedEnoughByY = Math.abs(this.todoProps.dy) > this.initialMove.el.height / 2
+      const movedEnoughByY = Math.abs(this.todoProps.dy) > this.initialMove.el.height / 1.5
 
       if (movedEnoughByX) {
         this.todoProps.directionSign = this.todoProps.dx > 0 ? 1 : -1
@@ -331,7 +333,7 @@ export default {
       })
     },
     animateSwapTodo () {
-      if (this.todos.length < 2) {
+      if (this.isSwap || this.todos.length < 2) {
         console.log('TODO: prevent swap if one or less todo')
         return
       }
@@ -341,9 +343,11 @@ export default {
       const nextTodoRef = ((this.$refs[`todoRef_${this.todos[1].id}`] || [])[0])
 
       this.isMove = true
+      this.isSwap = true
+
       gsap.timeline()
         .to( todoRef, {
-          duration: 0.5,
+          duration: 0.4,
           ease: 'power2.in',
           boxShadow: this.boxShadow(15),
           onComplete: () => {
@@ -352,19 +356,20 @@ export default {
           }
         })
         .to( todoRef, {
-          duration: 0.5,
+          duration: 0.4,
           ease: 'power2.out',
           scale: 0.99,
           y: 5,
           boxShadow: this.boxShadow(1),
           onComplete: () => {
             this.isMove = false
+            this.isSwap = false
           }
         })
 
       gsap.timeline()
         .to( todoRefWrapper, {
-          duration: 0.5,
+          duration: 0.4,
           ease: 'power2.in',
           x: 0,
           y: todoRefWrapper.offsetHeight + 30,
@@ -372,7 +377,7 @@ export default {
           rotationX: 10,
         })
         .to( todoRefWrapper, {
-          duration: 0.5,
+          duration: 0.4,
           ease: 'power2.out',
           x: 0,
           y: 0,

@@ -6,6 +6,10 @@
           color="amber"
           @click="addOrders"
         ) Add orders
+        q-btn(
+          color="amber"
+          @click="addDeleted"
+        ) Add deleted
     .section
       .container
         .stacks Stacks:
@@ -60,6 +64,14 @@ export default {
           this.todosRef.doc(todo.id).update({ order })
           return ++order
         }, 0)
+      });
+    },
+    addDeleted () {
+      this.stacks.forEach(stack => {
+        this.stacksRef.doc(stack.id).update({ deleted: false })
+        this.todos.forEach( todo => {
+          this.todosRef.doc(todo.id).update({ deleted: false })
+        })
       });
     }
   }

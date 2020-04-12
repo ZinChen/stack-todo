@@ -2,6 +2,7 @@
 @import '~bulma/bulma'
 
 $grey: #f5f5f5
+$stack-shadow: 0 1.2px 3.1px rgba(0, 0, 0, 0.014), 0 3.4px 8.6px rgba(0, 0, 0, 0.02), 0 8.1px 20.8px rgba(0, 0, 0, 0.026), 0 27px 69px rgba(0, 0, 0, 0.04)
 
 body
   user-select: none
@@ -9,6 +10,15 @@ body
   -o-user-select: none
   -moz-user-select: -moz-none
   -webkit-user-select: none
+
+.section
+  padding: 1.5rem
+
+.field
+  width: 100%
+
+  .control:first-child
+    flex: 1
 
 #q-app
   @media screen and (min-width: 1024px)
@@ -29,17 +39,24 @@ body
   button
     margin-top: 20px
 
-.todo-list
+.create-todo-list
+  display: flex
+  justify-content: center
+  align-items: center
+  padding: 30px 20px
   margin-bottom: 40px
-  background: #fff
   border-radius: 3px
-  border: 1px solid #ccc
-  // box-shadow:
-  //   0 1.2px 3.1px rgba(0, 0, 0, 0.014),
-  //   0 3.4px 8.6px rgba(0, 0, 0, 0.02),
-  //   0 8.1px 20.8px rgba(0, 0, 0, 0.026),
-  //   0 27px 69px rgba(0, 0, 0, 0.04)
-  //
+  background: #f0f0f0
+  box-shadow: $stack-shadow
+
+.todo-list
+  margin-bottom: 20px
+  padding: 20px
+  border-radius: 3px
+  background: #f0f0f0
+  position: relative
+  box-shadow: $stack-shadow
+
   // transition: 0.3s box-shadow ease-in-out
 
   // &:hover
@@ -53,37 +70,35 @@ body
 
 .todo-list-title
   padding: 10px
+  &::placeholder
+    color: #c9c9c9
+
+.todo-list-buttons
+  display: flex
+  justify-content: flex-end
 
 .todo-list-item
   display: flex
   flex-direction: column
-  justify-content: center
-  align-items: center
+  place-items: center
   padding: 30px 20px
-  margin: 10px
-  border: 1px solid #ccc
+  margin-top: 10px
+  margin-bottom: 10px
+  border-radius: 5px
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%)
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 2px 0px
 
-.create-todo-list
-  display: flex
-  justify-content: center
-  align-items: center
-  padding: 30px 20px
-  margin-bottom: 40px
-  border-radius: 3px
-  color: #dedede
-  border: 1px solid #ccc
-  background: #fff
-
-.create-todo-list
-  cursor: pointer
-  i
-    font-size: 30px
-    color: #ccc
+.create-todo-list-item
+  input.input::placeholder
+    color: #c9c9c9
 
 .stack-header
   display: flex
   align-items: center
   margin-bottom: 20px
+
+.stack-info
+  flex: 1
 
 .stack-title,
 .stack-progress
@@ -99,6 +114,7 @@ body
   padding: 20px
   border-radius: 3px
   background: #f0f0f0
+  box-shadow: $stack-shadow
   position: relative
   z-index: 0
 

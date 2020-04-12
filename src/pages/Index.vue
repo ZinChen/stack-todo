@@ -25,6 +25,7 @@
               .field.has-addons
                 .control
                   input.input.todo-list-item-content(
+                    name="todo"
                     v-model="todo.title"
                     @blur="updateTodo(todo)"
                   )
@@ -38,11 +39,23 @@
                 placeholder="Type new todo"
                 v-on:keyup.enter="createTodo(stack)"
               )
+          .todo-list-buttons
+            q-btn(
+              round
+              icon="delete"
+              v-if="!stackTodos(stack.id).length"
+              color="deep-orange-9"
+              @click="deleteStack(stack)"
+            )
 
-        .create-todo-list(
-          @click="createStack"
-        )
-          i.fa.fa-plus-circle
+        .create-todo-list
+          q-btn(
+            fab
+            @click="createStack"
+            icon="fas fa-plus"
+            color="white"
+            text-color="grey-5"
+          )
     .section(
       key="stacks"
       v-if="screen == 'stacks'"
@@ -63,11 +76,21 @@
       :offset="[25,25]"
     )
       q-btn(
+        v-show="screen == 'stacks'"
+        transition="fade"
         fab
         @click="undoLastTodo"
         :disable="!lastUndone"
         color="accent"
         icon="undo"
+      )
+      q-btn(
+        v-show="screen == 'editor'"
+        transition="fade"
+        fab
+        @click="undoLastTodo"
+        color="accent"
+        icon="delete"
       )
       q-btn(
         fab
@@ -114,7 +137,11 @@ export default {
           .collection('stacks')
 
         this.stacksRef = stacksRef
-        this.$bind('stacks', stacksRef)
+        this.$bind('stacks', stacksRef.where('deleted', "==", false)
+          // .then(() => {
+          //   // TODO: check when all will be loaded
+          // })
+        )
 
         const todosRef = fireApp.firestore()
           .collection('users')
@@ -122,7 +149,11 @@ export default {
           .collection('todos')
 
         this.todosRef = todosRef
-        this.$bind('todos', todosRef)
+        this.$bind('todos', todosRef.where('deleted', "==", false)
+          // .then(() => {
+          //   // TODO: check when all will be loaded
+          // })
+        )
       } else {
         this.unbind('stacks')
       }
@@ -132,12 +163,12 @@ export default {
     return {
       todos: [],
       stacks: [],
-      screen: 'stacks',
+      screen: 'editor', // 'stacks',
     }
   },
   computed: {
     stackTodos() {
-      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId ), 'order', 'asc')
+      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId), 'order', 'asc')
     },
     lastUndone () {
       let lastTodo = { doneDate: 0 }
@@ -168,6 +199,7 @@ export default {
         stackId: stack.id,
         title: stack.newTodoTitle,
         createdAt: new Date(),
+        deleted: false,
         order
       }
 
@@ -180,16 +212,26 @@ export default {
       this.todosRef.doc(todo.id).update(todo)
     },
     deleteTodo (todo) {
-      this.todosRef.doc(todo.id).delete()
+      this.todosRef.doc(todo.id).update({
+        deleted: true,
+        deletedAt: new Date(),
+      })
     },
     createStack () {
       this.stacksRef.add({
-        title: ''
+        createdAt: new Date(),
+        title: '',
+        deleted: false,
       })
     },
     updateStack (stack) {
-      // console.log('stack', stack)
       this.stacksRef.doc(stack.id).update(stack)
+    },
+    deleteStack (stack) {
+      this.stacksRef.doc(stack.id).update({
+        deleted: true,
+        deletedAt: new Date(),
+      })
     },
     undoLastTodo (e) {
       const lastTodo = this.lastUndone
