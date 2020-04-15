@@ -58,6 +58,7 @@ export default {
   },
   methods: {
     logout: function() {
+      // test
       firebase.auth().signOut().then(() => {
         this.state = 'logout'
         this.user = {}
