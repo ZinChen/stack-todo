@@ -11,7 +11,7 @@
             q-item
               q-item-section(
                 clickable
-                @click="test"
+                @click="logout"
               ) Logout (test)
 
       q-toolbar-title
@@ -26,7 +26,9 @@ import firebase from 'firebase'
 
 const login = function() {
   // Read about auth types here: https://firebase.google.com/docs/auth/web/cordova
-  const provider = new firebase.auth.GoogleAuthProvider()
+  const provider = new firebase.auth.GoogleAuthProvider().setCustomParameters({
+    prompt: 'select_account'
+  })
   firebase.auth().signInWithRedirect(provider).then(function() {
     return firebase.auth().getRedirectResult()
   })
@@ -56,11 +58,11 @@ export default {
   },
   methods: {
     logout: function() {
-      firebase.auth().signOut().then(function() {
+      firebase.auth().signOut().then(() => {
         this.state = 'logout'
         this.user = {}
         this.$root.$emit('state_update', this.state)
-      }, function(error) {
+      }, (error) => {
         console.log('error on logout: ', error)
       });
     },

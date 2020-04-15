@@ -155,7 +155,8 @@ export default {
           // })
         )
       } else {
-        this.unbind('stacks')
+        this.$unbind('stacks')
+        this.$unbind('todos')
       }
     })
   },
