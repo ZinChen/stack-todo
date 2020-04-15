@@ -52,7 +52,7 @@ import { gsap } from 'gsap'
 export default {
   name: 'todo-stack',
   props: [ 'stack', 'todos' ],
-  data: function() {
+  data: function () {
     return {
       isMove: false,
       isTouch: false,
@@ -69,18 +69,6 @@ export default {
           width: 0
         }
       }
-    }
-  },
-  created: function() {
-      document.addEventListener('touchmove', this.todoMoveTouch, { passive: false, capture: true })
-  },
-  beforeDestroy: function() {
-      document.removeEventListener('touchmove', this.todoMoveTouch)
-  },
-  watch: {
-    todos(olds, news) {
-      // console.log('olds[0]', olds[0])
-      // console.log('news[0]', news[0])
     }
   },
   computed: {
@@ -105,6 +93,18 @@ export default {
     notDoneCount () {
       return this.todos.filter(todo => !todo.done).length
     }
+  },
+  watch: {
+    todos (olds, news) {
+      // console.log('olds[0]', olds[0])
+      // console.log('news[0]', news[0])
+    }
+  },
+  created: function () {
+    document.addEventListener('touchmove', this.todoMoveTouch, { passive: false, capture: true })
+  },
+  beforeDestroy: function () {
+    document.removeEventListener('touchmove', this.todoMoveTouch)
   },
   methods: {
     touchStarted () {
@@ -211,12 +211,12 @@ export default {
       } else if (movedEnoughByY) {
         this.animateSwapTodo()
       } else {
-        this.computeTodoStyle({ dx: 0, dy: 0})
+        this.computeTodoStyle({ dx: 0, dy: 0 })
         this.animateTodoStyle({ callback: this.turnoffMove })
       }
     },
     todoIsDone () {
-      const todo =  this.currentTodo
+      const todo = this.currentTodo
       todo.done = true
       todo.doneDate = new Date()
 
@@ -233,7 +233,7 @@ export default {
         // multiply 'dy' just to rid of linear values
         rotateX = dy * Math.abs(dy / 2) / this.initialMove.el.height
         // rotateX *= -1 // in another direction
-        rotateX = clamp(rotateX, -20 , 20)
+        rotateX = clamp(rotateX, -20, 20)
 
         rotateY = dx * Math.abs(dx / 2) / this.initialMove.el.width
         rotateY = clamp(rotateY, -25, 25)
@@ -301,9 +301,8 @@ export default {
         background,
         duration: 0.5,
       })
-
     },
-    animateAway({ el, done }) {
+    animateAway ({ el, done }) {
       const todoRef = this.currentTodoRef
       const sign = this.todoProps.directionSign
       console.log('el', el)
@@ -323,30 +322,33 @@ export default {
     },
     animateNextTodo (nextTodoRef) {
       nextTodoRef && gsap.fromTo(nextTodoRef,
-      {
-        scale: 0.99,
-        y: 5,
-      }, {
-        scale: 1,
-        y: 0,
-        duration: 0.5
-      })
+        {
+          scale: 0.99,
+          y: 5,
+        }, {
+          scale: 1,
+          y: 0,
+          duration: 0.5
+        }
+      )
     },
     animateSwapTodo () {
-      if (this.isSwap || this.todos.length < 2) {
+      const notDoneTodos = this.todos.filter(todo => !todo.done)
+
+      if (this.isSwap || notDoneTodos.length < 2) {
         console.log('TODO: prevent swap if one or less todo')
         return
       }
 
       const todoRef = this.currentTodoRef
       const todoRefWrapper = (todoRef || {}).parentNode
-      const nextTodoRef = ((this.$refs[`todoRef_${this.todos[1].id}`] || [])[0])
+      const nextTodoRef = ((this.$refs[`todoRef_${notDoneTodos[1].id}`] || [])[0])
 
       this.isMove = true
       this.isSwap = true
 
       gsap.timeline()
-        .to( todoRef, {
+        .to(todoRef, {
           duration: 0.4,
           ease: 'power2.in',
           boxShadow: this.boxShadow(15),
@@ -355,7 +357,7 @@ export default {
             this.$emit('swap-todo', this.stack)
           }
         })
-        .to( todoRef, {
+        .to(todoRef, {
           duration: 0.4,
           ease: 'power2.out',
           scale: 0.99,
@@ -368,7 +370,7 @@ export default {
         })
 
       gsap.timeline()
-        .to( todoRefWrapper, {
+        .to(todoRefWrapper, {
           duration: 0.4,
           ease: 'power2.in',
           x: 0,
@@ -376,7 +378,7 @@ export default {
           z: 20,
           rotationX: 10,
         })
-        .to( todoRefWrapper, {
+        .to(todoRefWrapper, {
           duration: 0.4,
           ease: 'power2.out',
           x: 0,
@@ -389,7 +391,7 @@ export default {
       return `rgba(0, 0, 0, 0.15) 0px ${value}px ${value * 2}px 0px`
     },
     turnoffMove () {
-      this.computeTodoStyle({ dx: 0, dy: 0})
+      this.computeTodoStyle({ dx: 0, dy: 0 })
       this.isMove = false
     }
   }

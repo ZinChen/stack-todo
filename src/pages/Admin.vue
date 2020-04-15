@@ -26,7 +26,13 @@ import orderBy from 'lodash/orderBy'
 
 export default {
   name: 'PageAdmin',
-  beforeCreate: function() {
+  data: function () {
+    return {
+      stacks: [],
+      todos: []
+    }
+  },
+  beforeCreate: function () {
     this.$root.$on('state_update', (state) => {
       if (state === 'logged_in') {
         const user = firebase.auth().currentUser
@@ -45,34 +51,27 @@ export default {
 
         this.todosRef = todosRef
         this.$bind('todos', todosRef)
-
       } else {
         this.unbind('stacks')
       }
     })
   },
-  data: function() {
-    return {
-      stacks: [],
-      todos: []
-    }
-  },
   methods: {
     addOrders () {
       this.stacks.forEach(stack => {
-        orderBy(this.todos.filter(todo => todo.stackId === stack.id ), 'createdAt', 'asc').reduce((order, todo) => {
+        orderBy(this.todos.filter(todo => todo.stackId === stack.id), 'createdAt', 'asc').reduce((order, todo) => {
           this.todosRef.doc(todo.id).update({ order })
           return ++order
         }, 0)
-      });
+      })
     },
     addDeleted () {
       this.stacks.forEach(stack => {
         this.stacksRef.doc(stack.id).update({ deleted: false })
-        this.todos.forEach( todo => {
+        this.todos.forEach(todo => {
           this.todosRef.doc(todo.id).update({ deleted: false })
         })
-      });
+      })
     }
   }
 }

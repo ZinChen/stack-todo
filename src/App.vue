@@ -24,12 +24,12 @@
 import isEmpty from 'lodash/isEmpty'
 import firebase from 'firebase'
 
-const login = function() {
+const login = function () {
   // Read about auth types here: https://firebase.google.com/docs/auth/web/cordova
   const provider = new firebase.auth.GoogleAuthProvider().setCustomParameters({
     prompt: 'select_account'
   })
-  firebase.auth().signInWithRedirect(provider).then(function() {
+  firebase.auth().signInWithRedirect(provider).then(function () {
     return firebase.auth().getRedirectResult()
   })
 }
@@ -43,10 +43,9 @@ export default {
     }
   },
   // TODO: Try to use signup with login and password if it's not web
-  beforeCreate: function() {
+  beforeCreate: function () {
     // firebase.auth().getRedirectResult()
     firebase.auth().onAuthStateChanged((user) => {
-
       if (isEmpty(user)) {
         login()
       } else if (user) {
@@ -57,18 +56,17 @@ export default {
     })
   },
   methods: {
-    logout: function() {
-      // test
+    logout: function () {
       firebase.auth().signOut().then(() => {
         this.state = 'logout'
         this.user = {}
         this.$root.$emit('state_update', this.state)
       }, (error) => {
         console.log('error on logout: ', error)
-      });
+      })
     },
     login,
-    test: function() {
+    test: function () {
       console.log('just for test')
     }
   }

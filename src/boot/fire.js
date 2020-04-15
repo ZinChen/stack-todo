@@ -15,6 +15,6 @@ const firebaseConfig = {
 export const fireApp = firebase.initializeApp(firebaseConfig)
 
 // "async" is optional
-export default ({  Vue /* app, router, Vue, ... */ }) => {
+export default ({ Vue /* app, router, Vue, ... */ }) => {
   Vue.use(firestorePlugin)
 }

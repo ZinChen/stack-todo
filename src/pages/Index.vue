@@ -126,7 +126,29 @@ import TodoStack from '../components/TodoStack'
 export default {
   name: 'PageIndex',
   components: { TodoStack },
-  beforeCreate: function() {
+  data () {
+    return {
+      todos: [],
+      stacks: [],
+      editorHistory: [],
+      screen: 'editor', // 'stacks',
+    }
+  },
+  computed: {
+    stackTodos () {
+      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId), 'order', 'asc')
+    },
+    lastUndone () {
+      let lastTodo = { doneDate: 0 }
+      this.todos.find(todo => {
+        if (todo.done && todo.doneDate > lastTodo.doneDate) {
+          lastTodo = todo
+        }
+      })
+      return lastTodo.done && lastTodo
+    }
+  },
+  beforeCreate: function () {
     this.$root.$on('state_update', (state) => {
       if (state === 'logged_in') {
         // Todo: track, when collections received
@@ -160,27 +182,6 @@ export default {
       }
     })
   },
-  data () {
-    return {
-      todos: [],
-      stacks: [],
-      screen: 'editor', // 'stacks',
-    }
-  },
-  computed: {
-    stackTodos() {
-      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId), 'order', 'asc')
-    },
-    lastUndone () {
-      let lastTodo = { doneDate: 0 }
-      this.todos.find(todo => {
-        if (todo.done && todo.doneDate > lastTodo.doneDate) {
-          lastTodo = todo
-        }
-      })
-      return lastTodo.done && lastTodo
-    }
-  },
   methods: {
     lastTodoOfStack (stackId) {
       const stackTodos = this.todos.filter(todo => todo.stackId === stackId)
@@ -204,7 +205,6 @@ export default {
         order
       }
 
-
       stack.newTodoTitle = ''
 
       this.todosRef.add(todo)
@@ -213,6 +213,10 @@ export default {
       this.todosRef.doc(todo.id).update(todo)
     },
     deleteTodo (todo) {
+      this.history.push({
+        type: 'todo',
+        id: todo.id
+      })
       this.todosRef.doc(todo.id).update({
         deleted: true,
         deletedAt: new Date(),
@@ -229,10 +233,70 @@ export default {
       this.stacksRef.doc(stack.id).update(stack)
     },
     deleteStack (stack) {
+      this.history.push({
+        type: 'stack',
+        id: stack.id
+      })
       this.stacksRef.doc(stack.id).update({
         deleted: true,
         deletedAt: new Date(),
       })
+    },
+    deleteAllDoneTodos () {
+      let doneTodoIds = this.todos.filter(todo => todo.done).map(todo => todo.id)
+      this.history.push({
+        type: 'todo_batch',
+        ids: doneTodoIds
+      })
+
+      const batch = fireApp.firestore().batch()
+
+      doneTodoIds.forEach(todoId => {
+        this.todosRef.doc(todoId).update({
+          deleted: true,
+          deletedAt: new Date()
+        })
+      })
+
+      batch.commit()
+    },
+    restoreByHistory () {
+      const {
+        editorHistory: history
+      } = this
+
+      if (!history.length) {
+        return false
+      }
+
+      const historyItem = history.splice(history.length - 1, 1)
+      const newValue = {
+        deleted: false,
+        deletedAt: firebase.firestore.FieldValue.delete(),
+      }
+
+      switch (historyItem.type) {
+        case 'todo':
+          this.todosRef.doc(historyItem.id).update(newValue)
+          break
+
+        case 'stack':
+          this.stacksRef.doc(historyItem.id).update(newValue)
+          break
+
+        case 'todo_batch':
+          const batch = fireApp.firestore().batch()
+
+          historyItem.ids.forEach(id => {
+            this.todosRef.doc(id).update(newValue)
+          })
+
+          batch.commit()
+          break
+
+        default:
+          break
+      }
     },
     undoLastTodo (e) {
       const lastTodo = this.lastUndone
@@ -244,7 +308,7 @@ export default {
       }
     },
     swapTodo (stack) {
-      const stackTodos = orderBy(this.todos.filter(todo => todo.stackId === stack.id ), 'order', 'asc')
+      const stackTodos = orderBy(this.todos.filter(todo => todo.stackId === stack.id && !todo.done), 'order', 'asc')
       const currentTodo = stackTodos[0]
 
       const batch = fireApp.firestore().batch()
@@ -254,7 +318,7 @@ export default {
         if (isCurrentTodo) {
           batch.update(this.todosRef.doc(currentTodo.id), { order: 0 })
         } else {
-          batch.update(this.todosRef.doc(currentTodo.id), { order: todo.order + 1})
+          batch.update(this.todosRef.doc(currentTodo.id), { order: todo.order + 1 })
         }
       })
 
