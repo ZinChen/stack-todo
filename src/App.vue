@@ -12,7 +12,7 @@
               q-item-section(
                 clickable
                 @click="logout"
-              ) Logout (test)
+              ) Logout
 
       q-toolbar-title
         | {{ user.email }}

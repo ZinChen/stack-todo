@@ -86,9 +86,15 @@
       )
       q-btn(
         v-show="screen == 'editor'"
-        transition="fade"
         fab
-        @click="undoLastTodo"
+        @click="restoreByHistory"
+        color="accent"
+        icon="undo"
+      )
+      q-btn(
+        v-show="screen == 'editor'"
+        fab
+        @click="deleteAllDoneTodos"
         color="accent"
         icon="delete"
       )
@@ -213,7 +219,7 @@ export default {
       this.todosRef.doc(todo.id).update(todo)
     },
     deleteTodo (todo) {
-      this.history.push({
+      this.editorHistory.push({
         type: 'todo',
         id: todo.id
       })
@@ -233,7 +239,7 @@ export default {
       this.stacksRef.doc(stack.id).update(stack)
     },
     deleteStack (stack) {
-      this.history.push({
+      this.editorHistory.push({
         type: 'stack',
         id: stack.id
       })
@@ -244,7 +250,7 @@ export default {
     },
     deleteAllDoneTodos () {
       let doneTodoIds = this.todos.filter(todo => todo.done).map(todo => todo.id)
-      this.history.push({
+      this.editorHistory.push({
         type: 'todo_batch',
         ids: doneTodoIds
       })
@@ -269,7 +275,8 @@ export default {
         return false
       }
 
-      const historyItem = history.splice(history.length - 1, 1)
+      const historyItem = history.splice(history.length - 1, 1)[0]
+
       const newValue = {
         deleted: false,
         deletedAt: firebase.firestore.FieldValue.delete(),
