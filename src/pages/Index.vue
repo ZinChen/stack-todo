@@ -19,20 +19,31 @@
             .todo-list-item(
               v-for="todo in stackTodos(stack.id)"
             )
-              p(
-                v-if="todo.done"
-              ) Done
               .field.has-addons
-                .control
+                p.control
+                  .button(
+                    @click="toggleTodoDone(todo)"
+                  )
+                    q-icon(
+                      v-if="todo.done"
+                      name="done"
+                    )
+                    q-icon(
+                      v-else
+                    )
+                p.control.todo-input
                   input.input.todo-list-item-content(
                     name="todo"
                     v-model="todo.title"
                     @blur="updateTodo(todo)"
                   )
-                .control
+                p.control
                   .button.is-error(
                     @click="deleteTodo(todo)"
-                  ) X
+                  )
+                    q-icon(
+                      name="close"
+                    )
             .todo-list-item.create-todo-list-item
               input.input.todo-list-item-content(
                 v-model="stack.newTodoTitle",
@@ -129,6 +140,34 @@ import { fireApp } from 'boot/fire.js'
 import orderBy from 'lodash/orderBy'
 import TodoStack from '../components/TodoStack'
 
+const bindFirebase = function (context) {
+  // Todo: track, when collections received
+  const user = firebase.auth().currentUser
+  const stacksRef = fireApp.firestore()
+    .collection('users')
+    .doc(user.uid)
+    .collection('stacks')
+
+  context.stacksRef = stacksRef
+  context.$bind('stacks', stacksRef.where('deleted', "==", false)
+    // .then(() => {
+    //   // TODO: check when all will be loaded
+    // })
+  )
+
+  const todosRef = fireApp.firestore()
+    .collection('users')
+    .doc(user.uid)
+    .collection('todos')
+
+  context.todosRef = todosRef
+  context.$bind('todos', todosRef.where('deleted', "==", false)
+    // .then(() => {
+    //   // TODO: check when all will be loaded
+    // })
+  )
+}
+
 export default {
   name: 'PageIndex',
   components: { TodoStack },
@@ -155,33 +194,12 @@ export default {
     }
   },
   beforeCreate: function () {
+    // weird workaround for hotreload
+    firebase.auth().currentUser && setTimeout(() => bindFirebase(this), 100)
+
     this.$root.$on('state_update', (state) => {
       if (state === 'logged_in') {
-        // Todo: track, when collections received
-        const user = firebase.auth().currentUser
-        const stacksRef = fireApp.firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('stacks')
-
-        this.stacksRef = stacksRef
-        this.$bind('stacks', stacksRef.where('deleted', "==", false)
-          // .then(() => {
-          //   // TODO: check when all will be loaded
-          // })
-        )
-
-        const todosRef = fireApp.firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('todos')
-
-        this.todosRef = todosRef
-        this.$bind('todos', todosRef.where('deleted', "==", false)
-          // .then(() => {
-          //   // TODO: check when all will be loaded
-          // })
-        )
+        bindFirebase(this)
       } else {
         this.$unbind('stacks')
         this.$unbind('todos')
@@ -304,6 +322,16 @@ export default {
         default:
           break
       }
+    },
+    toggleTodoDone (todo) {
+      if (todo.done) {
+        todo.done = false
+        todo.doneDate = firebase.firestore.FieldValue.delete()
+      } else {
+        todo.done = true
+        todo.doneDate = new Date()
+      }
+      this.updateTodo(todo)
     },
     undoLastTodo (e) {
       const lastTodo = this.lastUndone
