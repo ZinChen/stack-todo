@@ -80,7 +80,8 @@
             v-on:swap-todo="swapTodo"
             :key="stack.id"
             :stack="stack"
-            :todos="stackTodos(stack.id)"
+            :todos="stackTodosNotDone(stack.id)"
+            :todos-count="stackTodos(stack.id).length"
           )
 
     q-page-sticky(
@@ -89,30 +90,31 @@
     )
       q-btn(
         v-show="screen == 'stacks'"
-        transition="fade"
-        fab
         @click="undoLastTodo"
         :disable="!lastUndone"
+        transition="fade"
+        fab
         color="accent"
         icon="undo"
       )
       q-btn(
         v-show="screen == 'editor'"
-        fab
         @click="restoreByHistory"
+        fab
         color="accent"
         icon="undo"
       )
       q-btn(
         v-show="screen == 'editor'"
-        fab
         @click="deleteAllDoneTodos"
+        :disable="!doneTodos.length"
+        fab
         color="accent"
         icon="delete"
       )
       q-btn(
-        fab
         @click="toggleView"
+        fab
         color="accent"
         icon="edit"
       )
@@ -184,7 +186,13 @@ export default {
   },
   computed: {
     stackTodos () {
-      return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId), 'order', 'asc')
+      return stackId => this.todos.filter(todo => todo.stackId === stackId)
+    },
+    stackTodosNotDone () {
+      return stackId => this.todos.filter(todo => todo.stackId === stackId && !todo.done)
+    },
+    doneTodos () {
+      return this.todos.filter(todo => todo.done)
     },
     filteredStacks () {
       const nonEmptyStackIds = [...new Set(this.todos.map(todo => todo.stackId))]
@@ -216,7 +224,7 @@ export default {
   methods: {
     lastTodoOfStack (stackId) {
       const stackTodos = this.todos.filter(todo => todo.stackId === stackId)
-      return stackTodos.length && orderBy(stackTodos, 'order', 'desc')[0]
+      return stackTodos.length && stackTodos[0]
     },
     toggleView () {
       if (this.screen === 'stacks') {
@@ -358,7 +366,7 @@ export default {
       }
     },
     swapTodo (stack) {
-      const stackTodos = orderBy(this.todos.filter(todo => todo.stackId === stack.id && !todo.done), 'order', 'asc')
+      const stackTodos = this.todos.filter(todo => todo.stackId === stack.id && !todo.done)
       const currentTodo = stackTodos[0]
 
       const batch = fireApp.firestore().batch()

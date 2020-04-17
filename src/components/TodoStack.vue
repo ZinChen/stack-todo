@@ -6,7 +6,7 @@
       .stack-info
         .stack-title {{ stack.title }}
         .stack-progress
-          | {{ notDoneCount }} / {{ todosCount }}
+          | {{ todos.length }} / {{ todosCount }}
       .stack-buttons
         q-btn(
           round
@@ -21,7 +21,7 @@
         :css="false"
       )
         .stack-todo-wrapper(
-          v-for="todo in notDoneTodosReversed"
+          v-for="todo in todosReversed"
           :key="todo.id"
         )
           .stack-todo-item(
@@ -51,7 +51,7 @@ import { gsap } from 'gsap'
 
 export default {
   name: 'todo-stack',
-  props: [ 'stack', 'todos' ],
+  props: [ 'stack', 'todos', 'todosCount' ],
   data: function () {
     return {
       isMove: false,
@@ -73,25 +73,13 @@ export default {
   },
   computed: {
     currentTodo () {
-      return this.todos.find(todo => !todo.done) || {}
-    },
-    currentTodoIndex () {
-      return this.todos.findIndex(todo => !todo.done)
+      return this.todos.length > 0 ? this.todos[0] : {}
     },
     currentTodoRef () {
       return (this.$refs[`todoRef_${this.currentTodo.id}`] || [ false ])[0]
     },
-    notDoneTodosReversed () {
-      return this.todos.filter(todo => !todo.done).slice().reverse()
-    },
-    todosCount () {
-      return this.todos.length
-    },
-    doneCount () {
-      return this.todos.filter(todo => todo.done).length
-    },
-    notDoneCount () {
-      return this.todos.filter(todo => !todo.done).length
+    todosReversed () {
+      return this.todos.slice().reverse()
     }
   },
   watch: {
@@ -146,7 +134,7 @@ export default {
     },
     todoClick () {
       // TODO: this is just example, remove if useless
-      const lastDone = findLast(this.todos, todo => todo.done)
+      const lastDone = findLast(this.todos)
     },
     todoMoveTouchStart (e) {
       const evt = e.touches ? e.touches[0] : e
@@ -333,16 +321,14 @@ export default {
       )
     },
     animateSwapTodo () {
-      const notDoneTodos = this.todos.filter(todo => !todo.done)
-
-      if (this.isSwap || notDoneTodos.length < 2) {
+      if (this.isSwap || this.todos.length < 2) {
         console.log('TODO: prevent swap if one or less todo')
         return
       }
 
       const todoRef = this.currentTodoRef
       const todoRefWrapper = (todoRef || {}).parentNode
-      const nextTodoRef = ((this.$refs[`todoRef_${notDoneTodos[1].id}`] || [])[0])
+      const nextTodoRef = ((this.$refs[`todoRef_${this.todos[1].id}`] || [])[0])
 
       this.isMove = true
       this.isSwap = true
