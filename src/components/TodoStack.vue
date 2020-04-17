@@ -46,7 +46,6 @@
 
 <script>
 import clamp from 'lodash/clamp'
-import findLast from 'lodash/findLast'
 import { gsap } from 'gsap'
 
 export default {
@@ -131,10 +130,6 @@ export default {
     },
     leaveTodo (el, done) {
       this.animateAway({ el, done })
-    },
-    todoClick () {
-      // TODO: this is just example, remove if useless
-      const lastDone = findLast(this.todos)
     },
     todoMoveTouchStart (e) {
       const evt = e.touches ? e.touches[0] : e

@@ -20,31 +20,58 @@
             .todo-list-item(
               v-for="todo in stackTodos(stack.id)"
             )
+              q-icon.todo-item-icon(
+                v-if="todo.done"
+                name="done"
+                size="xs"
+                color="white"
+              )
               .field.has-addons
-                p.control
-                  .button(
-                    @click="toggleTodoDone(todo)"
-                  )
-                    q-icon(
-                      v-if="todo.done"
-                      name="done"
-                    )
-                    q-icon(
-                      v-else
-                    )
                 p.control.todo-input
                   input.input.todo-list-item-content(
                     name="todo"
                     v-model="todo.title"
                     @blur="updateTodo(todo)"
                   )
-                p.control
-                  .button.is-error(
-                    @click="deleteTodo(todo)"
-                  )
-                    q-icon(
-                      name="close"
+              q-btn(
+                flat
+                round
+                dense
+                icon="more_vert"
+                color="white"
+              )
+                q-menu
+                  q-list.todo-item-menu
+                    q-item(
+                      @click="toggleTodoDone(todo)"
+                      clickable
+                      v-close-popup
                     )
+                      q-item-section(
+                        v-if="todo.done"
+                      )
+                        q-icon(
+                          name="radio_button_unchecked"
+                        )
+                        span Set undone
+                      q-item-section(
+                        v-else
+                      )
+                        q-icon(
+                          name="check_circle_outline"
+                        )
+                        span Set done
+                    q-separator
+                    q-item(
+                      @click="deleteTodo(todo)"
+                      clickable
+                      v-close-popup
+                    )
+                      q-item-section
+                        q-icon(
+                          name="delete"
+                        )
+                        | Delete
             .todo-list-item.create-todo-list-item
               input.input.todo-list-item-content(
                 v-model="stack.newTodoTitle",
@@ -100,6 +127,7 @@
       q-btn(
         v-show="screen == 'editor'"
         @click="restoreByHistory"
+        :disable="!editorHistory.length"
         fab
         color="accent"
         icon="undo"
@@ -110,7 +138,7 @@
         :disable="!doneTodos.length"
         fab
         color="accent"
-        icon="delete"
+        icon="delete_sweep"
       )
       q-btn(
         @click="toggleView"
