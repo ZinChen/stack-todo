@@ -6,10 +6,6 @@
           color="amber"
           @click="addOrders"
         ) Add orders
-        q-btn(
-          color="amber"
-          @click="addDeleted"
-        ) Add deleted
     .section
       .container
         .stacks Stacks:
@@ -71,6 +67,16 @@ export default {
         this.todos.forEach(todo => {
           this.todosRef.doc(todo.id).update({ deleted: false })
         })
+      })
+    },
+    addCreatedAtToStacks () {
+      this.stacks.forEach((stack, index) => {
+        if (!stack.createdAt) {
+          let date = new Date()
+          date.setDate(date.getDate() - index)
+          console.log('date', date)
+          this.stacksRef.doc(stack.id).update({ createdAt: date })
+        }
       })
     }
   }

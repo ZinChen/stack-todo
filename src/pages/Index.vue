@@ -8,6 +8,7 @@
 
         .todo-list(
           v-for="stack in stacks"
+          :key="stack.id"
         )
           .todo-list-header
             input.input.todo-list-title(
@@ -74,7 +75,7 @@
       .container
         .todo-stack-list
           todo-stack(
-            v-for="stack in stacks"
+            v-for="stack in filteredStacks"
             v-on:update-todo="updateTodo"
             v-on:swap-todo="swapTodo"
             :key="stack.id"
@@ -150,6 +151,7 @@ const bindFirebase = function (context) {
 
   context.stacksRef = stacksRef
   context.$bind('stacks', stacksRef.where('deleted', "==", false)
+    .orderBy('createdAt')
     // .then(() => {
     //   // TODO: check when all will be loaded
     // })
@@ -162,6 +164,7 @@ const bindFirebase = function (context) {
 
   context.todosRef = todosRef
   context.$bind('todos', todosRef.where('deleted', "==", false)
+    .orderBy('order')
     // .then(() => {
     //   // TODO: check when all will be loaded
     // })
@@ -182,6 +185,10 @@ export default {
   computed: {
     stackTodos () {
       return stackId => orderBy(this.todos.filter(todo => todo.stackId === stackId), 'order', 'asc')
+    },
+    filteredStacks () {
+      const nonEmptyStackIds = [...new Set(this.todos.map(todo => todo.stackId))]
+      return this.stacks.filter(stack => nonEmptyStackIds.includes(stack.id))
     },
     lastUndone () {
       let lastTodo = { doneDate: 0 }
@@ -215,6 +222,7 @@ export default {
       if (this.screen === 'stacks') {
         this.screen = 'editor'
       } else {
+        this.saveNewTodos()
         this.screen = 'stacks'
       }
     },
@@ -264,6 +272,13 @@ export default {
       this.stacksRef.doc(stack.id).update({
         deleted: true,
         deletedAt: new Date(),
+      })
+    },
+    saveNewTodos () {
+      this.stacks.forEach(stack => {
+        if (stack.newTodoTitle) {
+          this.createTodo(stack)
+        }
       })
     },
     deleteAllDoneTodos () {
