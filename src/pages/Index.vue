@@ -31,6 +31,7 @@
                   input.input.todo-list-item-content(
                     name="todo"
                     v-model="todo.title"
+                    :disabled="todo.done"
                     @blur="updateTodo(todo)"
                   )
               q-btn(
@@ -111,41 +112,79 @@
             :todos-count="stackTodos(stack.id).length"
           )
 
-    q-page-sticky(
-      position="bottom-right"
-      :offset="[25,25]"
+    transition(
+      appear
+      enter-active-class="animated zoomIn"
+      leave-active-class="animated zoomOut"
     )
-      q-btn(
+      q-page-sticky(
+        v-show="screen == 'editor' && !isTyping"
+        position="bottom-right"
+        :offset="[25,25]"
+      )
+        q-btn(
+          @click="deleteAllDoneTodos"
+          :disable="!doneTodos.length"
+          fab
+          color="accent"
+          icon="delete_sweep"
+        )
+        q-btn(
+          @click="restoreByHistory"
+          :disable="!editorHistory.length"
+          fab
+          color="accent"
+          icon="undo"
+        )
+        q-btn(
+          @click="toggleView"
+          fab
+          color="accent"
+          icon="edit"
+        )
+
+    transition(
+      appear
+      enter-active-class="animated zoomIn"
+      leave-active-class="animated zoomOut"
+    )
+      q-page-sticky(
+        v-show="screen == 'editor' && isTyping"
+        position="bottom-right"
+        :offset="[25,25]"
+      )
+        q-btn(
+          @click="saveNewItem"
+          fab
+          color="accent"
+          icon="delete_sweep"
+        )
+
+    transition(
+      appear
+      enter-active-class="animated zoomIn"
+      leave-active-class="animated zoomOut"
+    )
+      q-page-sticky(
         v-show="screen == 'stacks'"
-        @click="undoLastTodo"
-        :disable="!lastUndone"
-        transition="fade"
-        fab
-        color="accent"
-        icon="undo"
+        position="bottom-right"
+        :offset="[25,25]"
       )
-      q-btn(
-        v-show="screen == 'editor'"
-        @click="restoreByHistory"
-        :disable="!editorHistory.length"
-        fab
-        color="accent"
-        icon="undo"
-      )
-      q-btn(
-        v-show="screen == 'editor'"
-        @click="deleteAllDoneTodos"
-        :disable="!doneTodos.length"
-        fab
-        color="accent"
-        icon="delete_sweep"
-      )
-      q-btn(
-        @click="toggleView"
-        fab
-        color="accent"
-        icon="edit"
-      )
+
+        q-btn(
+          @click="undoLastTodo"
+          :disable="!lastUndone"
+          transition="fade"
+          fab
+          color="accent"
+          icon="undo"
+        )
+        q-btn(
+          @click="toggleView"
+          fab
+          color="accent"
+          icon="edit"
+        )
       //- q-fab(
       //-   icon="more_horiz"
       //-   direction="up"
@@ -169,6 +208,7 @@
 import firebase from 'firebase'
 import { fireApp } from 'boot/fire.js'
 import orderBy from 'lodash/orderBy'
+import findLast from 'lodash/findLast'
 import TodoStack from '../components/TodoStack'
 
 const bindFirebase = function (context) {
@@ -237,9 +277,6 @@ export default {
     }
   },
   beforeCreate: function () {
-    // weird workaround for hotreload
-    firebase.auth().currentUser && setTimeout(() => bindFirebase(this), 100)
-
     this.$root.$on('state_update', (state) => {
       if (state === 'logged_in') {
         bindFirebase(this)
@@ -249,11 +286,10 @@ export default {
       }
     })
   },
+  created: function () {
+    firebase.auth().currentUser && bindFirebase(this)
+  },
   methods: {
-    lastTodoOfStack (stackId) {
-      const stackTodos = this.todos.filter(todo => todo.stackId === stackId)
-      return stackTodos.length && stackTodos[0]
-    },
     toggleView () {
       if (this.screen === 'stacks') {
         this.screen = 'editor'
@@ -263,7 +299,7 @@ export default {
       }
     },
     createTodo (stack) {
-      const lastTodo = this.lastTodoOfStack(stack.id)
+      const lastTodo = findLast(this.stackTodos(stack.id))
       const order = lastTodo && lastTodo.order + 1
       const todo = {
         stackId: stack.id,
@@ -317,6 +353,10 @@ export default {
         }
       })
     },
+    saveNewItem () {
+      // TODO:
+      // get current focused item, save it, switch to next item
+    },
     deleteAllDoneTodos () {
       let doneTodoIds = this.todos.filter(todo => todo.done).map(todo => todo.id)
       this.editorHistory.push({
@@ -353,6 +393,7 @@ export default {
 
       switch (historyItem.type) {
         case 'todo':
+          // TODO: place deleted to first place
           this.todosRef.doc(historyItem.id).update(newValue)
           break
 
@@ -361,6 +402,7 @@ export default {
           break
 
         case 'todo_batch':
+          // TODO: place deleted to first place
           const batch = fireApp.firestore().batch()
 
           historyItem.ids.forEach(id => {
@@ -390,22 +432,20 @@ export default {
       if (lastTodo) {
         lastTodo.done = false
         lastTodo.doneDate = firebase.firestore.FieldValue.delete()
+        // TODO: place deleted to first place
         this.updateTodo(lastTodo)
       }
     },
     swapTodo (stack) {
-      const stackTodos = this.todos.filter(todo => todo.stackId === stack.id && !todo.done)
+      const stackTodos = this.stackTodosNotDone(stack.id)
       const currentTodo = stackTodos[0]
 
       const batch = fireApp.firestore().batch()
 
-      stackTodos.forEach((todo) => {
-        const isCurrentTodo = todo.order == currentTodo.order
-        if (isCurrentTodo) {
-          batch.update(this.todosRef.doc(currentTodo.id), { order: 0 })
-        } else {
-          batch.update(this.todosRef.doc(currentTodo.id), { order: todo.order + 1 })
-        }
+      batch.update(this.todosRef.doc(currentTodo.id), { order: stackTodos.length - 1 })
+
+      stackTodos.slice(1).forEach((todo, index) => {
+        batch.update(this.todosRef.doc(todo.id), { order: index })
       })
 
       batch.commit()

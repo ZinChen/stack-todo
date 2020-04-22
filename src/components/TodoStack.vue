@@ -15,6 +15,10 @@
           icon="cached"
         )
     .stack-todos
+      .stack-bg
+        q-icon.stack-bg-icon(
+          name="emoji_events"
+        )
       transition-group(
         @enter="enterTodo"
         @leave="leaveTodo"
@@ -293,9 +297,11 @@ export default {
       this.animateNextTodo(this.currentTodoRef)
 
       gsap.to(el, {
-        rotationY: sign * 77,
+        rotationY: sign * 70,
         x: sign * el.offsetWidth * 0.7,
-        ease: 'power1.out',
+        opacity: 0,
+        boxShadow: this.boxShadow(15),
+        ease: 'power1.in',
         duration: 0.5,
         onComplete: () => {
           this.turnoffMove()
