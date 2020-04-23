@@ -117,7 +117,7 @@
       enter-active-class="animated zoomIn"
       leave-active-class="animated zoomOut"
     )
-      q-page-sticky(
+      q-page-sticky.fab-container(
         v-show="screen == 'editor' && !isTyping"
         position="bottom-right"
         :offset="[25,25]"
@@ -148,7 +148,7 @@
       enter-active-class="animated zoomIn"
       leave-active-class="animated zoomOut"
     )
-      q-page-sticky(
+      q-page-sticky.fab-container(
         v-show="screen == 'editor' && isTyping"
         position="bottom-right"
         :offset="[25,25]"
@@ -165,7 +165,7 @@
       enter-active-class="animated zoomIn"
       leave-active-class="animated zoomOut"
     )
-      q-page-sticky(
+      q-page-sticky.fab-container(
         v-show="screen == 'stacks'"
         position="bottom-right"
         :offset="[25,25]"
