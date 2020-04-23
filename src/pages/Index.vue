@@ -2,7 +2,7 @@
   q-layout.layout
     .section(
       key="editor"
-      v-if="screen == 'editor'"
+      v-if="pageState.screen == 'editor'"
     )
       .container.todo-lists
 
@@ -14,7 +14,8 @@
             input.input.todo-list-title(
               v-model="stack.title"
               placeholder="Stack title"
-              @blur="updateStack(stack)"
+              @input="setInputMode('stack', stack)"
+              @blur="blurStack(stack)"
             )
           .todo-list-items
             .todo-list-item(
@@ -32,7 +33,8 @@
                     name="todo"
                     v-model="todo.title"
                     :disabled="todo.done"
-                    @blur="updateTodo(todo)"
+                    @input="setInputMode('todo', todo)"
+                    @blur="blurTodo(todo)"
                   )
               q-btn(
                 flat
@@ -75,8 +77,9 @@
                         | Delete
             .todo-list-item.create-todo-list-item
               input.input.todo-list-item-content(
-                v-model="stack.newTodoTitle",
                 placeholder="Type new todo"
+                v-model="stack.newTodoTitle",
+                @input="setInputMode('new_todo', stack)"
                 v-on:keyup.enter="createTodo(stack)"
               )
           .todo-list-buttons
@@ -98,7 +101,7 @@
           )
     .section(
       key="stacks"
-      v-if="screen == 'stacks'"
+      v-if="pageState.screen == 'stacks'"
     )
       .container
         .todo-stack-list
@@ -118,7 +121,7 @@
       leave-active-class="animated zoomOut"
     )
       q-page-sticky.fab-container(
-        v-show="screen == 'editor' && !isTyping"
+        v-show="isEditorSimpleView"
         position="bottom-right"
         :offset="[25,25]"
       )
@@ -140,8 +143,9 @@
           @click="toggleView"
           fab
           color="accent"
-          icon="edit"
+          icon="dynamic_feed"
         )
+          //- icon="remove_red_eye"
 
     transition(
       appear
@@ -149,7 +153,7 @@
       leave-active-class="animated zoomOut"
     )
       q-page-sticky.fab-container(
-        v-show="screen == 'editor' && isTyping"
+        v-show="isEditorInputEditing"
         position="bottom-right"
         :offset="[25,25]"
       )
@@ -157,7 +161,7 @@
           @click="saveNewItem"
           fab
           color="accent"
-          icon="delete_sweep"
+          icon="save"
         )
 
     transition(
@@ -166,7 +170,7 @@
       leave-active-class="animated zoomOut"
     )
       q-page-sticky.fab-container(
-        v-show="screen == 'stacks'"
+        v-show="pageState.screen == 'stacks'"
         position="bottom-right"
         :offset="[25,25]"
       )
@@ -249,10 +253,31 @@ export default {
       todos: [],
       stacks: [],
       editorHistory: [],
-      screen: 'editor', // 'stacks',
+      pageState: {
+        screen: 'stacks', // 'editor',
+        mode: 'simple', // 'input_editing
+        input_data: {
+          type: '',
+          item: null
+        }
+      },
     }
   },
   computed: {
+    isEditorInputEditing () {
+      const {
+        screen,
+        mode
+      } = this.pageState
+      return screen == 'editor' && mode == 'input_editing'
+    },
+    isEditorSimpleView () {
+      const {
+        screen,
+        mode
+      } = this.pageState
+      return screen == 'editor' && mode != 'input_editing'
+    },
     stackTodos () {
       return stackId => this.todos.filter(todo => todo.stackId === stackId)
     },
@@ -291,14 +316,24 @@ export default {
   },
   methods: {
     toggleView () {
-      if (this.screen === 'stacks') {
-        this.screen = 'editor'
+      if (this.pageState.screen === 'stacks') {
+        this.pageState.screen = 'editor'
       } else {
         this.saveNewTodos()
-        this.screen = 'stacks'
+        this.pageState.screen = 'stacks'
       }
     },
+    setInputMode (type, item) {
+      this.pageState.mode = 'input_editing'
+      this.pageState.input_data.type = type
+      this.pageState.input_data.item = item
+    },
     createTodo (stack) {
+      if (this.pageState.mode != 'input_editing') {
+        return
+      }
+      this.pageState.mode = 'simple'
+
       const lastTodo = findLast(this.stackTodos(stack.id))
       const order = lastTodo && lastTodo.order + 1
       const todo = {
@@ -312,6 +347,12 @@ export default {
       stack.newTodoTitle = ''
 
       this.todosRef.add(todo)
+    },
+    blurTodo (todo) {
+      if (this.pageState.mode == 'input_editing') {
+        this.updateTodo(todo)
+        this.pageState.mode = 'simple'
+      }
     },
     updateTodo (todo) {
       this.todosRef.doc(todo.id).update(todo)
@@ -333,8 +374,15 @@ export default {
         deleted: false,
       })
     },
+    blurStack (stack) {
+      if (this.pageState.mode == 'input_editing') {
+        this.updateStack(stack)
+        this.pageState.mode = 'simple'
+      }
+    },
     updateStack (stack) {
       this.stacksRef.doc(stack.id).update(stack)
+      this.pageState.mode = 'simple'
     },
     deleteStack (stack) {
       this.editorHistory.push({
@@ -354,8 +402,35 @@ export default {
       })
     },
     saveNewItem () {
-      // TODO:
-      // get current focused item, save it, switch to next item
+      const {
+        type,
+        item
+      } = this.pageState.input_data
+
+      // ugly short alternative
+
+      // const methods = {
+      //   stack: 'updateStack',
+      //   todo: 'updateTodo',
+      //   new_todo: 'createTodo'
+      // }
+      // if (Object.keys(methods).includes(type)) {
+      //   this[methods[type]]()
+      // }
+
+      switch (type) {
+        case 'stack':
+          this.blurStack(item)
+          break
+
+        case 'todo':
+          this.blurTodo(item)
+          break
+
+        case 'new_todo':
+          this.createTodo(item)
+          break
+      }
     },
     deleteAllDoneTodos () {
       let doneTodoIds = this.todos.filter(todo => todo.done).map(todo => todo.id)
