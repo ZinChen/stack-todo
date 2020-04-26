@@ -41,6 +41,8 @@ module.exports = {
     'eqeqeq': 'off',
     'array-bracket-spacing': 'off',
     'no-unused-vars': 'off',
+    'vue/name-property-casing': 'off',
+    'vue/require-prop-types': 'off',
 
     // allow debugger during development only
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'

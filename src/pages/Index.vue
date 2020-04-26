@@ -125,20 +125,30 @@
         position="bottom-right"
         :offset="[25,25]"
       )
-        q-btn(
-          @click="deleteAllDoneTodos"
-          :disable="!doneTodos.length"
-          fab
-          color="accent"
-          icon="delete_sweep"
+        transition(
+          appear
+          enter-active-class="animated zoomIn"
+          leave-active-class="animated zoomOut"
         )
-        q-btn(
-          @click="restoreByHistory"
-          :disable="!editorHistory.length"
-          fab
-          color="accent"
-          icon="undo"
+          q-btn(
+            @click="deleteAllDoneTodos"
+            v-show="doneTodos.length"
+            fab
+            color="accent"
+            icon="delete_sweep"
+          )
+        transition(
+          appear
+          enter-active-class="animated zoomIn"
+          leave-active-class="animated zoomOut"
         )
+          q-btn(
+            @click="restoreByHistory"
+            v-show="editorHistory.length"
+            fab
+            color="accent"
+            icon="undo"
+          )
         q-btn(
           @click="toggleView"
           fab
@@ -174,15 +184,19 @@
         position="bottom-right"
         :offset="[25,25]"
       )
-
-        q-btn(
-          @click="undoLastTodo"
-          :disable="!lastUndone"
-          transition="fade"
-          fab
-          color="accent"
-          icon="undo"
+        transition(
+          appear
+          enter-active-class="animated zoomIn"
+          leave-active-class="animated zoomOut"
         )
+          q-btn(
+            @click="undoLastTodo"
+            v-show="lastUndone"
+            transition="fade"
+            fab
+            color="accent"
+            icon="undo"
+          )
         q-btn(
           @click="toggleView"
           fab
@@ -214,6 +228,7 @@ import { fireApp } from 'boot/fire.js'
 import orderBy from 'lodash/orderBy'
 import findLast from 'lodash/findLast'
 import TodoStack from '../components/TodoStack'
+import TodoStackCss from '../components/TodoStackCss'
 
 const bindFirebase = function (context) {
   // Todo: track, when collections received
@@ -247,7 +262,7 @@ const bindFirebase = function (context) {
 
 export default {
   name: 'PageIndex',
-  components: { TodoStack },
+  components: { TodoStack, TodoStackCss },
   data () {
     return {
       todos: [],
@@ -335,7 +350,7 @@ export default {
       this.pageState.mode = 'simple'
 
       const lastTodo = findLast(this.stackTodos(stack.id))
-      const order = lastTodo && lastTodo.order + 1
+      const order = lastTodo ? lastTodo.order + 1 : 0
       const todo = {
         stackId: stack.id,
         title: stack.newTodoTitle,
