@@ -1,6 +1,6 @@
 <template lang="pug">
   .stack-item(
-    :class="{ 'active-stack': isMove }"
+    :style="{ zIndex }"
   )
     .stack-header
       .stack-info
@@ -9,8 +9,9 @@
           | {{ todos.length }} / {{ todosCount }}
       .stack-buttons
         q-btn(
-          round
+          v-if="todos.length > 1"
           @click="swapTodo"
+          round
           color="orange-4"
           icon="cached"
         )
@@ -19,91 +20,117 @@
         q-icon.stack-bg-icon(
           name="emoji_events"
         )
-      transition-group(
-        @enter="enterTodo"
-        @leave="leaveTodo"
-        :css="false"
-      )
-        .stack-todo-wrapper(
+        .stack-todo-item(
           v-for="todo in todosReversed"
           :key="todo.id"
+          :class="todoClass(todo)"
+          v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
         )
-          .stack-todo-item(
-            v-if="todo.title == currentTodo.title"
-            :ref="'todoRef_' + todo.id"
-            v-touch:swipe="handleSwipe"
-            class="current-todo"
-          )
-            .stack-todo-item-content {{ todo.title }}
-          .stack-todo-item(
-            v-else
-            :ref="'todoRef_' + todo.id"
-          )
-            .stack-todo-item-content {{ todo.title }}
+          .stack-todo-item-content {{ todo.title }}
+
       .stack-todo-item.stack-todo-item-ghost
         .stack-todo-item-content
           | {{ currentTodo.title }}
 </template>
 
 <style lang="sass">
+  @import '../css/todo-stack-css'
   @import '../css/todo-stack-animation'
 </style>
 
 <script>
+import pull from 'lodash/pull'
+
 export default {
   name: 'todo-stack-css',
-  props: [ 'stack', 'todos', 'todosCount' ],
+  props: [ 'stack', 'todos', 'todosCount', 'zIndex' ],
   data: function () {
     return {
-      isMove: false,
-      directionSign: 1
+      directionSign: 1,
+      todoProps: {}, // id: { class }
     }
   },
   computed: {
-    currentTodo () {
-      return this.todos.length > 0 ? this.todos[0] : {}
-    },
     todosReversed () {
       return this.todos.slice().reverse()
     },
-    todoRef () {
-      return (todo) => {
-        return (this.$refs[`todoRef_${todo.id}`] || [ false ])[0]
+  },
+  created () {
+    console.log('created')
+    this.currentTodo = this.todos.length > 0 ? this.todos[0] : {}
+    this.todos.forEach((todo, index) => {
+      this.$set(this.todoProps, todo.id, { class: ['invisible'] })
+      // TODO:
+      // - add class 'active'
+      // - why transition not working after animation
+      // - we chould do this only first time
+      setTimeout(() => this.$set(this.todoProps[todo.id], 'class', ['appear']), 100 * (this.todos.length - index))
+    })
+
+    this.$watch('todos', (newItems, oldItems) => {
+      const oldIds = oldItems.map(todo => todo.id)
+      const newIds = newItems.map(todo => todo.id)
+      const deleted = oldItems.filter(todo => !newIds.includes(todo.id))
+      const added = newItems.filter(todo => !oldIds.includes(todo.id))
+
+      if (deleted.length || added.length) {
+        console.log('deleted', deleted)
+        console.log('added', added)
       }
-    }
+
+      if (deleted.length) {
+        deleted.forEach(todo => this.$set(this.todoProps, todo.id, {}))
+      }
+
+      if (added.length) {
+        added.forEach(todo => this.$set(this.todoProps[todo.id], 'class', ['undone']))
+      }
+    })
   },
   methods: {
-    handleSwipe (direction) {
-      console.log('this is swipe')
-      if (!this.isMove && ['left', 'right'].includes(direction)) {
-        this.todoProps.directionSign = direction === 'right' ? 1 : -1
-        // this.isMove = true
-        this.todoIsDone()
+    todoClass (todo) {
+      return this.todoProps[todo.id].class
+    },
+    handleSwipe (todo, { direction = false } = {}) {
+      if (['left', 'right'].includes(direction)) {
+        // this.todoProps.directionSign = direction === 'right' ? 1 : -1
+        this.todoIsDone(todo)
       } else {}
     },
-    enterTodo (el, done) {
-      console.log('enter', el)
-      done()
-    },
-    leaveTodo (el, done) {
-      // add class
-      // this.animateAway({ el, done })
-    },
     swapTodo () {
-      const todoRef = this.todoRef(this.currentTodo)
-      const todoRefWrapper = (todoRef || {}).parentNode
-      const nextTodoRef = ((this.$refs[`todoRef_${this.todos[1].id}`] || [])[0])
+      const todo = this.todos[0]
+      const nextTodo = this.todos[1]
+      let nextTodoClass = this.todoProps[nextTodo.id].class
 
-      // this.isMove = true
+      if (this.todos.length == 2) {
+        nextTodoClass = ['active']
+      } else {
+        nextTodoClass = nextTodoClass.filter(classy => classy == 'swap')
+      }
+
+      this.$set(this.todoProps[todo.id], 'class', ['swap'])
+      this.$set(this.todoProps[nextTodo.id], 'class', nextTodoClass)
 
       this.$emit('swap-todo', this.stack)
-    },
-    todoIsDone () {
-      const todo = this.currentTodo
-      todo.done = true
-      todo.doneDate = new Date()
 
-      this.$emit('update-todo', todo)
+      // this.todoProps[todo.id].swapStarted = new Date()
+      // setTimeout(() => {
+      //   this.todoProps[todo.id].isSwapping = false
+      // })
+
+      // setTimeout(() => {
+
+      // }, 200)
+
+      // setTimeout(() => this.$emit('swap-todo', this.stack), 200)
+    },
+    todoIsDone (todo) {
+      this.$set(this.todoProps[todo.id], 'class', ['done'])
+      setTimeout(() => {
+        todo.done = true
+        todo.doneDate = new Date()
+        this.$emit('update-todo', todo)
+      }, 500)
     },
   }
 }

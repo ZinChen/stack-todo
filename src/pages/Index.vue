@@ -105,14 +105,15 @@
     )
       .container
         .todo-stack-list
-          todo-stack(
-            v-for="stack in filteredStacks"
+          todo-stack-css(
+            v-for="(stack, index) in filteredStacks"
             v-on:update-todo="updateTodo"
             v-on:swap-todo="swapTodo"
             :key="stack.id"
             :stack="stack"
             :todos="stackTodosNotDone(stack.id)"
             :todos-count="stackTodos(stack.id).length"
+            :z-index="stacks.length - index"
           )
 
     transition(
@@ -130,7 +131,7 @@
           enter-active-class="animated zoomIn"
           leave-active-class="animated zoomOut"
         )
-          q-btn(
+          q-btn.second-fab(
             @click="deleteAllDoneTodos"
             v-show="doneTodos.length"
             fab
@@ -142,7 +143,7 @@
           enter-active-class="animated zoomIn"
           leave-active-class="animated zoomOut"
         )
-          q-btn(
+          q-btn.second-fab(
             @click="restoreByHistory"
             v-show="editorHistory.length"
             fab

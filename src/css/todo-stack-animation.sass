@@ -1,0 +1,50 @@
+@keyframes appear
+  0%
+    transform: translate(-15%, -15%)
+    opacity: 0
+  100%
+    transform: translateX(0) rotateY(0)
+    opacity: 1
+
+@keyframes done
+  0%
+    transform: translateX(0) rotateY(0)
+    opacity: 1
+  100%
+    transform: translateX(70%) rotateY(70deg)
+    opacity: 0
+
+@keyframes undone
+  0%
+    transform: translateX(70%) rotateY(70deg)
+    opacity: 0
+
+  100%
+    transform: translateX(0) rotateY(0)
+    opacity: 1
+
+@keyframes swap
+  0%
+    transform: translateY(0) rotateX(0)
+    z-index: 1
+
+  50%
+    transform: translateY(130%) rotateX(10deg)
+
+  100%
+    transform: translateY(5px) rotateX(0) scale(0.99)
+    z-index: auto
+
+.stack-todo-item
+
+  &.done
+    animation: done 0.5s ease-out
+
+  &.undone
+    animation: undone 0.5s ease-out
+
+  &.appear
+    animation: appear 0.5s ease-out
+
+  &.swap
+    animation: swap 0.7s ease-in-out

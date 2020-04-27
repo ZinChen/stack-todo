@@ -1,0 +1,27 @@
+.stack-item
+  perspective: 150vw
+
+.stack-todo-item
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  box-shadow: none
+  transition: all 0.5s ease-out
+
+
+  &.active
+    transform: translateX(0) translateY(0)
+
+  &:last-child, &:nth-last-child(2)
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 2px 0px
+
+  &.stack-todo-item-ghost
+    position: relative
+    visibility: hidden
+
+  &:not(.current-todo)
+    transform: translateX(0) translateY(0)
+
+  &:not(.done):not(:last-child)
+    transform: translateY(5px) scale(0.99)
