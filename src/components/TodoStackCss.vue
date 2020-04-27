@@ -95,7 +95,9 @@ export default {
       if (['left', 'right'].includes(direction)) {
         // this.todoProps.directionSign = direction === 'right' ? 1 : -1
         this.todoIsDone(todo)
-      } else {}
+      } else if (['top', 'down'].includes(direction)) {
+        this.swapTodo()
+      }
     },
     swapTodo () {
       const todo = this.todos[0]
@@ -112,17 +114,6 @@ export default {
       this.$set(this.todoProps[nextTodo.id], 'class', nextTodoClass)
 
       this.$emit('swap-todo', this.stack)
-
-      // this.todoProps[todo.id].swapStarted = new Date()
-      // setTimeout(() => {
-      //   this.todoProps[todo.id].isSwapping = false
-      // })
-
-      // setTimeout(() => {
-
-      // }, 200)
-
-      // setTimeout(() => this.$emit('swap-todo', this.stack), 200)
     },
     todoIsDone (todo) {
       this.$set(this.todoProps[todo.id], 'class', ['done'])

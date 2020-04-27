@@ -1,8 +1,8 @@
 <template lang="pug">
   q-layout.layout
-    .section(
+    .section.screen-section.editor-section(
       key="editor"
-      v-if="pageState.screen == 'editor'"
+      :class="{'active-section': pageState.screen == 'editor'}"
     )
       .container.todo-lists
 
@@ -99,9 +99,9 @@
             color="white"
             text-color="grey-5"
           )
-    .section(
+    .section.screen-section.stacks-section(
       key="stacks"
-      v-if="pageState.screen == 'stacks'"
+      :class="{'active-section': pageState.screen == 'stacks'}"
     )
       .container
         .todo-stack-list
