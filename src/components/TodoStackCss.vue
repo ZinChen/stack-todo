@@ -20,17 +20,15 @@
         q-icon.stack-bg-icon(
           name="emoji_events"
         )
-        .stack-todo-item(
-          v-for="todo in todosReversed"
-          :key="todo.id"
-          :class="todoClass(todo)"
-          v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
-        )
-          .stack-todo-item-content {{ todo.title }}
+      .stack-todo-item(
+        v-for="todo in todosReversed"
+        :key="todo.id"
+        :class="todoClass(todo)"
+        v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
+      )
+        .stack-todo-item-content {{ todo.title }}
 
-      .stack-todo-item.stack-todo-item-ghost
-        .stack-todo-item-content
-          | {{ currentTodo.title }}
+    .stack-todo-item.stack-todo-item-ghost
 </template>
 
 <style lang="sass">
@@ -100,22 +98,24 @@ export default {
       if (['left', 'right'].includes(direction)) {
         // this.todoProps.directionSign = direction === 'right' ? 1 : -1
         this.todoIsDone(todo)
-      } else if (['top', 'down'].includes(direction)) {
-        this.swapTodo()
+      } else if (['up', 'down'].includes(direction)) {
+        this.swapTodo(direction)
       }
     },
-    swapTodo () {
+    swapTodo (direction) {
       const todo = this.todos[0]
       const nextTodo = this.todos[1]
-      let nextTodoClass = this.todoProps[nextTodo.id].class
 
+      let nextTodoClass = this.todoProps[nextTodo.id].class
       if (this.todos.length == 2) {
         nextTodoClass = ['active']
       } else {
-        nextTodoClass = nextTodoClass.filter(classy => classy == 'swap')
+        nextTodoClass = nextTodoClass.filter(classy => 'swap')
       }
 
-      this.$set(this.todoProps[todo.id], 'class', ['swap'])
+      const swapClass = direction == 'up' ? 'swap-up' : 'swap'
+
+      this.$set(this.todoProps[todo.id], 'class', [swapClass])
       this.$set(this.todoProps[nextTodo.id], 'class', nextTodoClass)
 
       this.$emit('swap-todo', this.stack)
@@ -126,7 +126,7 @@ export default {
         todo.done = true
         todo.doneDate = new Date()
         this.$emit('update-todo', todo)
-      }, 500)
+      }, 700)
     },
   }
 }
