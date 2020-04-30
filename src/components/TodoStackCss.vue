@@ -54,13 +54,11 @@ export default {
     },
   },
   created () {
-    console.log('created')
     this.currentTodo = this.todos.length > 0 ? this.todos[0] : {}
     this.todos.forEach((todo, index) => {
       this.$set(this.todoProps, todo.id, { class: ['invisible'] })
       // TODO:
       // better intro animation
-      // create test page for animation
       // create loader with little animated icons: todos falling in stacks and scroll down, preloader slides up
       // clicking on todo opens "modal" with full todo title
       setTimeout(() => this.$set(this.todoProps[todo.id], 'class', ['appear']), 100 * (this.todos.length - index))
@@ -71,11 +69,6 @@ export default {
       const newIds = newItems.map(todo => todo.id)
       const deleted = oldItems.filter(todo => !newIds.includes(todo.id))
       const added = newItems.filter(todo => !oldIds.includes(todo.id))
-
-      if (deleted.length || added.length) {
-        console.log('deleted', deleted)
-        console.log('added', added)
-      }
 
       if (deleted.length) {
         deleted.forEach(todo => this.$set(this.todoProps, todo.id, {}))
@@ -98,27 +91,37 @@ export default {
       if (['left', 'right'].includes(direction)) {
         // this.todoProps.directionSign = direction === 'right' ? 1 : -1
         this.todoIsDone(todo)
-      } else if (['up', 'down'].includes(direction)) {
-        this.swapTodo(direction)
+      } else if (direction == 'down') {
+        this.swapTodo()
+      } else if (direction == 'up') {
+        this.swapTodoBack()
       }
     },
     swapTodo (direction) {
       const todo = this.todos[0]
       const nextTodo = this.todos[1]
 
-      let nextTodoClass = this.todoProps[nextTodo.id].class
-      if (this.todos.length == 2) {
-        nextTodoClass = ['active']
-      } else {
-        nextTodoClass = nextTodoClass.filter(classy => 'swap')
-      }
+      const nextTodoClass = this.todos.length > 2
+        ? this.todoProps[nextTodo.id].class
+        : ['active']
 
-      const swapClass = direction == 'up' ? 'swap-up' : 'swap'
-
-      this.$set(this.todoProps[todo.id], 'class', [swapClass])
+      this.$set(this.todoProps[todo.id], 'class', ['swap'])
       this.$set(this.todoProps[nextTodo.id], 'class', nextTodoClass)
 
       this.$emit('swap-todo', this.stack)
+    },
+    swapTodoBack () {
+      const todo = this.todos[0]
+      const prevTodo = this.todos[this.todos.length - 1]
+
+      const todoClass = this.todos.length > 2
+        ? this.todoProps[todo.id].class
+        : [ 'active' ]
+
+      this.$set(this.todoProps[todo.id], 'class', [todoClass])
+      this.$set(this.todoProps[prevTodo.id], 'class', ['swap-up'])
+
+      this.$emit('swap-todo-back', this.stack)
     },
     todoIsDone (todo) {
       this.$set(this.todoProps[todo.id], 'class', ['done'])

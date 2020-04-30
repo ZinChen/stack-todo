@@ -40,11 +40,9 @@
   0%
     transform: translateY(0) rotateX(0)
     z-index: 1
-
   50%
     transform: translateY(130%) rotateX(10deg) scale(1.02)
     box-shadow: rgba(0, 0, 0, 0.15) 0px 10px 20px 0px
-
   100%
     transform: translateY(5px) rotateX(0) scale(0.99)
     z-index: auto
@@ -53,15 +51,14 @@
 @keyframes swap-up
   0%
     transform: translateY(0) rotateX(0)
-    z-index: 1
-
+    z-index: -1
   50%
     transform: translateY(-110%) rotateX(-10deg) scale(1.02)
+    z-index: auto
+  80%
     box-shadow: rgba(0, 0, 0, 0.15) 0px 10px 20px 0px
-
   100%
     transform: translateY(5px) rotateX(0) scale(0.99)
-    z-index: auto
 
 .stack-todo-item
 

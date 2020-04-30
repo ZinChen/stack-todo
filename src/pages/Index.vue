@@ -109,6 +109,7 @@
             v-for="(stack, index) in filteredStacks"
             v-on:update-todo="updateTodo"
             v-on:swap-todo="swapTodo"
+            v-on:swap-todo-back="swapTodoBack"
             :key="stack.id"
             :stack="stack"
             :todos="stackTodosNotDone(stack.id)"
@@ -537,6 +538,20 @@ export default {
 
       stackTodos.slice(1).forEach((todo, index) => {
         batch.update(this.todosRef.doc(todo.id), { order: index })
+      })
+
+      batch.commit()
+    },
+    swapTodoBack (stack) {
+      const stackTodos = this.stackTodosNotDone(stack.id)
+      const prevTodo = stackTodos[stackTodos.length - 1]
+
+      const batch = fireApp.firestore().batch()
+
+      batch.update(this.todosRef.doc(prevTodo.id), { order: 0 })
+
+      stackTodos.slice(0, stackTodos.length - 1).forEach((todo, index) => {
+        batch.update(this.todosRef.doc(todo.id), { order: index + 1 })
       })
 
       batch.commit()
