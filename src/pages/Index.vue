@@ -522,7 +522,7 @@ export default {
 
       if (lastTodo) {
         lastTodo.done = false
-        lastTodo.doneDate = firebase.firestore.FieldValue.delete()
+        // lastTodo.doneDate = firebase.firestore.FieldValue.delete()
         // TODO: place deleted to first place
         this.updateTodo(lastTodo)
       }

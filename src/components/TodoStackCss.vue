@@ -61,9 +61,10 @@ export default {
     this.todos.forEach((todo, index) => {
       this.$set(this.todoProps, todo.id, { class: ['invisible'] })
       // TODO:
-      // - add class 'active'
-      // - why transition not working after animation
-      // - we chould do this only first time
+      // better intro animation
+      // create test page for animation
+      // create loader with little animated icons: todos falling in stacks and scroll down, preloader slides up
+      // clicking on todo opens "modal" with full todo title
       setTimeout(() => this.$set(this.todoProps[todo.id], 'class', ['appear']), 100 * (this.todos.length - index))
     })
 
@@ -83,7 +84,11 @@ export default {
       }
 
       if (added.length) {
-        added.forEach(todo => this.$set(this.todoProps[todo.id], 'class', ['undone']))
+        added.forEach(todo => {
+          this.$set(this.todoProps, todo.id, {})
+          const todoClass = todo.doneDate ? 'undone' : 'appear'
+          this.$set(this.todoProps[todo.id], 'class', [todoClass])
+        })
       }
     })
   },

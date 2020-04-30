@@ -3,6 +3,9 @@
 
 $grey: #f5f5f5
 $stack-shadow: 0 1.2px 3.1px rgba(0, 0, 0, 0.014), 0 3.4px 8.6px rgba(0, 0, 0, 0.02), 0 8.1px 20.8px rgba(0, 0, 0, 0.026), 0 27px 69px rgba(0, 0, 0, 0.04)
+$stack-background: #f7f7f7
+$section-background: #f3f3f3
+$stack-card-radius: 5px
 
 body
   user-select: none
@@ -18,6 +21,7 @@ body,
 
 #q-app > .q-layout
   height: calc(100% - 50px)
+  min-height: auto !important
 
 .invisible
   opacity: 0
@@ -46,6 +50,7 @@ body,
 
 .section
   padding: 1.5rem
+  background: $section-background
 
 .field
   width: 100%
@@ -88,15 +93,15 @@ body,
   align-items: center
   padding: 30px 20px
   margin-bottom: 40px
-  border-radius: 3px
-  background: #f0f0f0
+  border-radius: $stack-card-radius
+  background: $stack-background
   box-shadow: $stack-shadow
 
 .todo-list
   margin-bottom: 20px
   padding: 20px
-  border-radius: 3px
-  background: #f0f0f0
+  border-radius: $stack-card-radius
+  background: $stack-background
   position: relative
   box-shadow: $stack-shadow
 
@@ -199,8 +204,8 @@ body,
 .stack-item
   margin-bottom: 20px
   padding: 20px
-  border-radius: 3px
-  background: #f0f0f0
+  border-radius: $stack-card-radius
+  background: $stack-background
   box-shadow: $stack-shadow
   position: relative
   z-index: 0
