@@ -4,6 +4,9 @@ const routes = [
     path: '/admin', component: () => import('pages/Admin.vue')
   },
   {
+    path: '/testdev', component: () => import('pages/TestDev.vue')
+  },
+  {
     path: '/', component: () => import('pages/Index.vue')
   },
 ]
