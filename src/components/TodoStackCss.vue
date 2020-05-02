@@ -24,6 +24,7 @@
         v-for="todo in todosReversed"
         :key="todo.id"
         :class="todoClass(todo)"
+        @click="todoClick(todo)"
         v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
       )
         .stack-todo-item-content {{ todo.title }}
@@ -87,7 +88,14 @@ export default {
     todoClass (todo) {
       return this.todoProps[todo.id].class
     },
+    todoClick (todo) {
+      console.log('clicked')
+    },
     handleSwipe (todo, { direction = false } = {}) {
+      if (todo.id != this.todos[0].id) {
+        return
+      }
+
       if (['left', 'right'].includes(direction)) {
         // this.todoProps.directionSign = direction === 'right' ? 1 : -1
         this.todoIsDone(todo)
@@ -97,7 +105,7 @@ export default {
         this.swapTodoBack()
       }
     },
-    swapTodo (direction) {
+    swapTodo () {
       const todo = this.todos[0]
       const nextTodo = this.todos[1]
 
@@ -105,10 +113,13 @@ export default {
         ? this.todoProps[nextTodo.id].class
         : ['active']
 
-      this.$set(this.todoProps[todo.id], 'class', ['swap'])
+      this.$emit('swap-todo', this.stack)
       this.$set(this.todoProps[nextTodo.id], 'class', nextTodoClass)
 
-      this.$emit('swap-todo', this.stack)
+      setTimeout(() => {
+        // Trying to reduce glitch
+        this.$set(this.todoProps[todo.id], 'class', ['swap'])
+      }, 5)
     },
     swapTodoBack () {
       const todo = this.todos[0]
