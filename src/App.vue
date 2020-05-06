@@ -32,8 +32,6 @@ import isEmpty from 'lodash/isEmpty'
 import firebase from 'firebase'
 import Preloader from 'components/Preloader'
 
-// TODO: compare with inserting preloader directly in index.html and hide it with "watch" and "document.querySelector(#preloader)"
-
 const login = function () {
   // Read about auth types here: https://firebase.google.com/docs/auth/web/cordova
   const provider = new firebase.auth.GoogleAuthProvider().setCustomParameters({
@@ -67,7 +65,7 @@ export default {
         setTimeout(() => {
           this.loadingState = 'loaded'
           this.$root.$emit('loading_state', this.loadingState)
-        }, 2500)
+        }, 2000)
       }
     })
   },
@@ -75,6 +73,7 @@ export default {
     logout: function () {
       firebase.auth().signOut().then(() => {
         this.authState = 'logout'
+        this.loadingState = 'loading'
         this.user = {}
         this.$root.$emit('auth_state', this.authState)
       }, (error) => {

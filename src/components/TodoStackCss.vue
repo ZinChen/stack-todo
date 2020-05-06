@@ -113,15 +113,18 @@ export default {
       const nextTodo = this.todos[1]
 
       const nextTodoClass = this.todos.length > 2
-        ? this.todoProps[nextTodo.id].class
+        ? this.todoProps[nextTodo.id].class.filter(classy => classy == 'swap')
         : ['active']
 
       this.$emit('swap-todo', this.stack)
+
       this.$set(this.todoProps[nextTodo.id], 'class', nextTodoClass)
+      this.$set(this.todoProps[nextTodo.id], 'style', {})
 
       setTimeout(() => {
         // Trying to reduce glitch
         this.$set(this.todoProps[todo.id], 'class', ['swap'])
+        this.$set(this.todoProps[todo.id], 'style', {})
       }, 5)
     },
     swapTodoBack () {
@@ -129,16 +132,24 @@ export default {
       const prevTodo = this.todos[this.todos.length - 1]
 
       const todoClass = this.todos.length > 2
-        ? this.todoProps[todo.id].class
-        : [ 'active' ]
-
-      this.$set(this.todoProps[todo.id], 'class', [todoClass])
-      this.$set(this.todoProps[prevTodo.id], 'class', ['swap-up'])
+        ? this.todoProps[todo.id].class.filter(classy => classy == 'swap')
+        : ['active']
 
       this.$emit('swap-todo-back', this.stack)
+
+      this.$set(this.todoProps[todo.id], 'class', [todoClass])
+      this.$set(this.todoProps[todo.id], 'style', {})
+
+      setTimeout(() => {
+        // Trying to reduce glitch
+        this.$set(this.todoProps[prevTodo.id], 'class', ['swap-up'])
+        this.$set(this.todoProps[prevTodo.id], 'style', {})
+      }, 5)
     },
     todoIsDone (todo) {
       this.$set(this.todoProps[todo.id], 'class', ['done'])
+      this.$set(this.todoProps[todo.id], 'style', {})
+      // wait for animation ends
       setTimeout(() => {
         todo.done = true
         todo.doneDate = new Date()
