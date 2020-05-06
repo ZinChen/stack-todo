@@ -16,6 +16,7 @@
               placeholder="Stack title"
               @input="setInputMode('stack', stack)"
               @blur="blurStack(stack)"
+              v-on:keyup.enter="blurStack(stack)"
             )
           .todo-list-items
             .todo-list-item(
@@ -35,6 +36,7 @@
                     :disabled="todo.done"
                     @input="setInputMode('todo', todo)"
                     @blur="blurTodo(todo)"
+                    v-on:keyup.enter="blurTodo(todo)"
                   )
               q-btn(
                 flat

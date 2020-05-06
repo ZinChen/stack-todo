@@ -35,7 +35,7 @@ import Preloader from 'components/Preloader'
 const login = function () {
   // Read about auth types here: https://firebase.google.com/docs/auth/web/cordova
   const provider = new firebase.auth.GoogleAuthProvider().setCustomParameters({
-    prompt: 'select_account'
+    prompt: 'select_account' // TODO: check if it's needed
   })
   firebase.auth().signInWithRedirect(provider).then(function () {
     return firebase.auth().getRedirectResult()
