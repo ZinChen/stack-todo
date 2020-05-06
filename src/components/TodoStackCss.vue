@@ -25,6 +25,7 @@
         v-for="todo in todosReversed"
         :key="todo.id"
         :class="todoClass(todo)"
+        :style="todoStyle(todo)"
         @click="todoClick(todo)"
         v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
       )
@@ -58,10 +59,10 @@ export default {
   created () {
     this.currentTodo = this.todos.length > 0 ? this.todos[0] : {}
     this.todos.forEach((todo, index) => {
-      this.$set(this.todoProps, todo.id, { class: ['invisible'] })
+      const animationDelay = (this.todos.length - index) / 10 + 's'
+      this.$set(this.todoProps, todo.id, { class: ['appear'], style: { animationDelay } })
       // TODO:
       // clicking on todo opens "modal" with full todo title
-      setTimeout(() => this.$set(this.todoProps[todo.id], 'class', ['appear']), 100 * (this.todos.length - index))
     })
 
     this.$watch('todos', (newItems, oldItems) => {
@@ -86,6 +87,9 @@ export default {
   methods: {
     todoClass (todo) {
       return this.todoProps[todo.id].class
+    },
+    todoStyle (todo) {
+      return this.todoProps[todo.id].style
     },
     todoClick (todo) {
       console.log('clicked')

@@ -2,10 +2,12 @@
   0%
     transform: translate(-15%, -15%)
     opacity: 0
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 15px 30px 0px
   30%
     opacity: 1
   100%
     transform: translateY(5px) rotateX(0) scale(0.99)
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 2px 0px
 
 @keyframes appear-current
   0%
@@ -78,10 +80,10 @@
     animation: undone 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)
 
   &.appear
-    animation: appear 0.7s cubic-bezier(0.4, 0, 0.2, 1)
+    animation: appear 0.7s cubic-bezier(0.4, 0, 0.2, 1) backwards
 
-  &.appear:last-child
-    animation: appear-current 0.7s cubic-bezier(0.4, 0, 0.2, 1)
+  &.appear:last-child,
+    animation: appear-current 0.7s cubic-bezier(0.4, 0, 0.2, 1) backwards
 
   &.swap
     animation: swap 0.7s cubic-bezier(0.4, 0, 0.2, 1)
