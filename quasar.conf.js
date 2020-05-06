@@ -100,6 +100,9 @@ module.exports = function (ctx) {
     animations: [
       'zoomIn',
       'zoomOut',
+      'slideOutRight',
+      'flipOutY',
+      'fadeOut'
     ],
 
     // https://quasar.dev/quasar-cli/developing-ssr/configuring-ssr

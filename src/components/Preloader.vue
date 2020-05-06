@@ -81,23 +81,19 @@ $moveendsat: 80%
     transform: translateY(-300%)
   100%
     transform: translateY(-300%)
-html,
-body,
+
 .layout
   position: absolute
   top: 0
   left: 0
   width: 100%
   height: 100%
-  margin: 0
-  z-index: 10
-
-.layout
   background: #f0f0f0
   display: flex
   flex-flow: column
   align-items: center
   justify-content: center
+  z-index: 10
 
 .icon-container
   position: relative

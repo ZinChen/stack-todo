@@ -1,8 +1,11 @@
 <template lang="pug">
   #q-app
-    transition
+    transition(
+      appear
+      leave-active-class="animated fadeOut"
+    )
       preloader(
-        v-show="state != 'logged_in'"
+        v-show="loadingState == 'loading'"
       )
     q-toolbar.bg-white
       q-avatar.bg-grey
@@ -46,7 +49,8 @@ export default {
   components: { Preloader },
   data: function () {
     return {
-      state: 'init',
+      authState: 'init',
+      loadingState: 'loading',
       user: {},
     }
   },
@@ -57,18 +61,22 @@ export default {
       if (isEmpty(user)) {
         login()
       } else if (user) {
-        this.state = 'logged_in'
-        this.$root.$emit('state_update', this.state)
+        this.authState = 'logged_in'
         this.user = user
+        this.$root.$emit('auth_state', this.authState)
+        setTimeout(() => {
+          this.loadingState = 'loaded'
+          this.$root.$emit('loading_state', this.loadingState)
+        }, 2500)
       }
     })
   },
   methods: {
     logout: function () {
       firebase.auth().signOut().then(() => {
-        this.state = 'logout'
+        this.authState = 'logout'
         this.user = {}
-        this.$root.$emit('state_update', this.state)
+        this.$root.$emit('auth_state', this.authState)
       }, (error) => {
         console.log('error on logout: ', error)
       })

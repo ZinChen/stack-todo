@@ -106,6 +106,7 @@
       .container
         .todo-stack-list
           todo-stack-css(
+            v-show="isLoaded"
             v-for="(stack, index) in filteredStacks"
             v-on:update-todo="updateTodo"
             v-on:swap-todo="swapTodo"
@@ -267,6 +268,7 @@ export default {
   components: { TodoStack, TodoStackCss },
   data () {
     return {
+      isLoaded: false,
       todos: [],
       stacks: [],
       editorHistory: [],
@@ -319,13 +321,16 @@ export default {
     }
   },
   beforeCreate: function () {
-    this.$root.$on('state_update', (state) => {
+    this.$root.$on('auth_state', (state) => {
       if (state === 'logged_in') {
         bindFirebase(this)
       } else {
         this.$unbind('stacks')
         this.$unbind('todos')
       }
+    })
+    this.$root.$on('loading_state', (state) => {
+      this.isLoaded = state == 'loaded'
     })
   },
   created: function () {

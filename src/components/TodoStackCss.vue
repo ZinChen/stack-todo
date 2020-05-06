@@ -17,6 +17,7 @@
         )
     .stack-todos
       .stack-bg
+        //- TODO: show only when last todo finished, add some animations
         q-icon.stack-bg-icon(
           name="emoji_events"
         )
@@ -59,8 +60,6 @@ export default {
     this.todos.forEach((todo, index) => {
       this.$set(this.todoProps, todo.id, { class: ['invisible'] })
       // TODO:
-      // better intro animation
-      // create loader with little animated icons: todos falling in stacks and scroll down, preloader slides up
       // clicking on todo opens "modal" with full todo title
       setTimeout(() => this.$set(this.todoProps[todo.id], 'class', ['appear']), 100 * (this.todos.length - index))
     })
