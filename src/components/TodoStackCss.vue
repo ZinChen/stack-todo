@@ -21,15 +21,18 @@
         q-icon.stack-bg-icon(
           name="emoji_events"
         )
-      .stack-todo-item(
-        v-for="todo in todosReversed"
-        :key="todo.id"
-        :class="todoClass(todo)"
-        :style="todoStyle(todo)"
-        @click="todoClick(todo)"
-        v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
+      transition-group(
+        leave-active-class="done"
       )
-        .stack-todo-item-content {{ todo.title }}
+        .stack-todo-item(
+          v-for="todo in todosReversed"
+          :key="todo.id"
+          :class="todoClass(todo)"
+          :style="todoStyle(todo)"
+          @click="todoClick(todo)"
+          v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
+        )
+          .stack-todo-item-content {{ todo.title }}
 
     .stack-todo-item.stack-todo-item-ghost
 </template>
@@ -42,13 +45,16 @@
 <script>
 import pull from 'lodash/pull'
 
+const animationTime = 1000
+const preloaderLeaving = 1000
+
 export default {
   name: 'todo-stack-css',
   props: [ 'stack', 'todos', 'todosCount', 'zIndex' ],
   data: function () {
     return {
       directionSign: 1,
-      todoProps: {}, // id: { class }
+      todoProps: {}, // id: { class, style }
     }
   },
   computed: {
@@ -57,12 +63,17 @@ export default {
     },
   },
   created () {
+    // TODO: create another array to show todos
+    // TODO: clicking on todo opens "modal" with full todo title
     this.currentTodo = this.todos.length > 0 ? this.todos[0] : {}
     this.todos.forEach((todo, index) => {
-      const animationDelay = (this.todos.length - index) / 10 + 's'
+      const delay = this.todos.length - index
+      const animationDelay = delay / 10 + 's'
       this.$set(this.todoProps, todo.id, { class: ['appear'], style: { animationDelay } })
-      // TODO:
-      // clicking on todo opens "modal" with full todo title
+
+      setTimeout(() => {
+        this.$set(this.todoProps, todo.id, { class: [], style: {} })
+      }, delay * 100 + animationTime + preloaderLeaving)
     })
 
     this.$watch('todos', (newItems, oldItems) => {
@@ -71,6 +82,7 @@ export default {
       const deleted = oldItems.filter(todo => !newIds.includes(todo.id))
       const added = newItems.filter(todo => !oldIds.includes(todo.id))
 
+      // TODO: Track order changing
       if (deleted.length) {
         deleted.forEach(todo => this.$set(this.todoProps, todo.id, {}))
       }
@@ -78,8 +90,13 @@ export default {
       if (added.length) {
         added.forEach(todo => {
           this.$set(this.todoProps, todo.id, {})
+
           const todoClass = todo.doneDate ? 'undone' : 'appear'
           this.$set(this.todoProps[todo.id], 'class', [todoClass])
+
+          setTimeout(() => {
+            this.$set(this.todoProps[todo.id], 'class', [])
+          }, animationTime)
         })
       }
     })
@@ -112,53 +129,30 @@ export default {
       const todo = this.todos[0]
       const nextTodo = this.todos[1]
 
-      const nextTodoClass = this.todos.length > 2
-        ? this.todoProps[nextTodo.id].class.filter(classy => classy == 'swap')
-        : ['active']
+      this.$set(this.todoProps[todo.id], 'class', ['swap'])
+      // workaround for list with 2 items
+      if (this.todos.length == 2) {
+        this.$set(this.todoProps[nextTodo.id], 'class', ['something'])
+      }
 
       this.$emit('swap-todo', this.stack)
-
-      this.$set(this.todoProps[nextTodo.id], 'class', nextTodoClass)
-      this.$set(this.todoProps[nextTodo.id], 'style', {})
-
-      setTimeout(() => {
-        // Trying to reduce glitch
-        this.$set(this.todoProps[todo.id], 'class', ['swap'])
-        this.$set(this.todoProps[todo.id], 'style', {})
-      }, 5)
     },
     swapTodoBack () {
       const todo = this.todos[0]
       const prevTodo = this.todos[this.todos.length - 1]
 
-      const todoClass = this.todos.length > 2
-        ? this.todoProps[todo.id].class.filter(classy => classy == 'swap')
-        : ['active']
+      this.$set(this.todoProps[prevTodo.id], 'class', ['swap-up'])
+      // workaround for list with 2 items
+      if (this.todos.length == 2) {
+        this.$set(this.todoProps[todo.id], 'class', ['something'])
+      }
 
       this.$emit('swap-todo-back', this.stack)
-
-      this.$set(this.todoProps[todo.id], 'class', [todoClass])
-      this.$set(this.todoProps[todo.id], 'style', {})
-
-      setTimeout(() => {
-        // Trying to reduce glitch
-        this.$set(this.todoProps[prevTodo.id], 'class', ['swap-up'])
-        this.$set(this.todoProps[prevTodo.id], 'style', {})
-      }, 5)
     },
     todoIsDone (todo) {
-      this.$set(this.todoProps[todo.id], 'class', ['done'])
-      this.$set(this.todoProps[todo.id], 'style', {})
-
-      // TODO: create another array to show todos
-      this.todos[1] && this.$set(this.todoProps[this.todos[1].id], 'class', [])
-
-      // wait for animation ends
-      setTimeout(() => {
-        todo.done = true
-        todo.doneDate = new Date()
-        this.$emit('update-todo', todo)
-      }, 700)
+      todo.done = true
+      todo.doneDate = new Date()
+      this.$emit('update-todo', todo)
     },
   }
 }
