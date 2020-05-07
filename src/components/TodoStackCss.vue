@@ -149,6 +149,10 @@ export default {
     todoIsDone (todo) {
       this.$set(this.todoProps[todo.id], 'class', ['done'])
       this.$set(this.todoProps[todo.id], 'style', {})
+
+      // TODO: create another array to show todos
+      this.todos[1] && this.$set(this.todoProps[this.todos[1].id], 'class', [])
+
       // wait for animation ends
       setTimeout(() => {
         todo.done = true
