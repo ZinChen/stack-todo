@@ -21,6 +21,7 @@
 
 <style lang="sass" scoped>
 $duration: 2s
+$delay: -1.1s
 $stack-size: 20vmin
 $stack-bradius: 2vmin
 $stack-item-shadow-top: -43px 54.7px 19.3px rgba(0, 0, 0, 0.036), 6px 72.3px 47.9px rgba(0, 0, 0, 0.054)
@@ -108,20 +109,20 @@ $moveendsat: 80%
   height: $stack-size
   border-radius: $stack-bradius
   background: #fff
-  animation: #{$duration} stack-slide forwards infinite ease-in-out
+  animation: #{$duration} stack-slide #{$delay} forwards infinite ease-in-out
   will-change: transition
 
 .stack-appearing
   position: absolute
-  animation: #{$duration} stack-appearing forwards infinite ease-in-out
+  animation: #{$duration} stack-appearing #{$delay} forwards infinite ease-in-out
 
 .stack-entering
   position: absolute
-  animation: #{$duration} stack-entering forwards infinite ease-in-out
+  animation: #{$duration} stack-entering #{$delay} forwards infinite ease-in-out
 
 .stack-leaving
   position: absolute
-  animation: #{$duration} stack-leaving forwards infinite ease-in-out
+  animation: #{$duration} stack-leaving #{$delay} forwards infinite ease-in-out
 
 .stack-title
   position: absolute
@@ -140,12 +141,13 @@ $moveendsat: 80%
   width: 80%
   border-radius: 1vmin
   background: linear-gradient(135deg, #f6d365 0%, #fda085 100%)
+  box-shadow: $stack-item-shadow-down
   will-change: transition, box-shadow
 
 .stack-items.animated-items
   @for $i from 1 through 3
     .stack-item:nth-child(#{$i})
-      animation: 2s item-drop-#{$i} forwards infinite ease-in-out
+      animation: #{$duration} item-drop-#{$i} #{$delay} forwards infinite ease-in-out
 
 </style>
 
