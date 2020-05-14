@@ -62,10 +62,8 @@ export default {
         this.authState = 'logged_in'
         this.user = user
         this.$root.$emit('auth_state', this.authState)
-        setTimeout(() => {
-          this.loadingState = 'loaded'
-          this.$root.$emit('loading_state', this.loadingState)
-        }, 2000)
+        this.loadingState = 'loaded'
+        this.$root.$emit('loading_state', this.loadingState)
       }
     })
   },

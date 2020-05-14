@@ -1,5 +1,7 @@
 <template lang="pug">
-.layout
+.layout(
+  :class="mode"
+)
   .icon-container
     .stack.stack-leaving
       .stack-title
@@ -96,10 +98,41 @@ $moveendsat: 80%
   justify-content: center
   z-index: 10
 
+.layout:not(.full)
+  .stack
+    animation-delay: .8s
+    animation-play-state: paused
+
+  .stack-appearing,
+  .stack-entering,
+  .stack-leaving
+    display: none
+    animation: none
+
+.layout.freezed
+  .stack-items.animated-items
+    .stack-item
+      animation-play-state: paused
+      animation-delay: -.30s
+      // animation-delay: -0.75s
+
+.layout.static
+  .stack-items.animated-items
+    .stack-item
+      animation: none
+
+    .stack-item:last-child
+      transform: translate(85px, -85px)
+      box-shadow: $stack-item-shadow-top
+
+    .stack-item:nth-child(2)
+      transform: translate(40px, -40px)
+      box-shadow: $stack-item-shadow-top
+
 .icon-container
   position: relative
   padding: 20vmin
-  border: 1px solid #e0e0e0
+  // border: 1px solid #e0e0e0
   transform: rotateX(45deg) rotateZ(-45deg)
   overflow: hidden
 
@@ -133,6 +166,10 @@ $moveendsat: 80%
   border-radius: 1vmin
   background: #cecece
 
+.stack-items
+  width: 100%
+  height: 100%
+
 .stack-item
   position: absolute
   top: 50%
@@ -153,6 +190,11 @@ $moveendsat: 80%
 
 <script>
 export default {
-  name: 'preloader'
+  name: 'preloader',
+  data: function () {
+    return {
+      mode: 'freezed' // 'full', 'simple', 'freezed ,'static'
+    }
+  }
 }
 </script>

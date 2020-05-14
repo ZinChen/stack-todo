@@ -21,18 +21,16 @@
         q-icon.stack-bg-icon(
           name="emoji_events"
         )
-      transition-group(
-        leave-active-class="done"
+      .stack-todo-item(
+        v-for="todo in todosReversed"
+        :key="todo.id"
+        :ref="`todoRef${todo.id}`"
+        :class="todoClass(todo)"
+        :style="todoStyle(todo)"
+        @click="todoClick(todo)"
+        v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
       )
-        .stack-todo-item(
-          v-for="todo in todosReversed"
-          :key="todo.id"
-          :class="todoClass(todo)"
-          :style="todoStyle(todo)"
-          @click="todoClick(todo)"
-          v-touch-swipe.mouse="(event) => handleSwipe(todo, event)"
-        )
-          .stack-todo-item-content {{ todo.title }}
+        .stack-todo-item-content {{ todo.title }}
 
     .stack-todo-item.stack-todo-item-ghost
 </template>
@@ -44,9 +42,10 @@
 
 <script>
 import pull from 'lodash/pull'
+import isEmpty from 'lodash/isEmpty'
 
 const animationTime = 1000
-const preloaderLeaving = 1000
+const preloaderLeaving = 0
 
 export default {
   name: 'todo-stack-css',
@@ -63,17 +62,13 @@ export default {
     },
   },
   created () {
-    // TODO: create another array to show todos
+    // TODO: create another array to show todos <--
     // TODO: clicking on todo opens "modal" with full todo title
     this.currentTodo = this.todos.length > 0 ? this.todos[0] : {}
     this.todos.forEach((todo, index) => {
       const delay = this.todos.length - index
       const animationDelay = delay / 10 + 's'
       this.$set(this.todoProps, todo.id, { class: ['appear'], style: { animationDelay } })
-
-      setTimeout(() => {
-        this.$set(this.todoProps, todo.id, { class: [], style: {} })
-      }, delay * 100 + animationTime + preloaderLeaving)
     })
 
     this.$watch('todos', (newItems, oldItems) => {
@@ -84,7 +79,13 @@ export default {
 
       // TODO: Track order changing
       if (deleted.length) {
-        deleted.forEach(todo => this.$set(this.todoProps, todo.id, {}))
+        deleted.forEach(todo => {
+          if ((this.todoProps[todo.id] || {}).class == 'done') {
+            this.$set(this.todoProps, todo.id, {})
+          } else {
+            this.showDeletion(todo)
+          }
+        })
       }
 
       if (added.length) {
@@ -94,14 +95,36 @@ export default {
           const todoClass = todo.doneDate ? 'undone' : 'appear'
           this.$set(this.todoProps[todo.id], 'class', [todoClass])
 
-          setTimeout(() => {
+          this.setTodoAnimationCallback(todo, () => {
             this.$set(this.todoProps[todo.id], 'class', [])
-          }, animationTime)
+          })
         })
       }
     })
   },
+  mounted () {
+    this.todos.forEach((todo, index) => {
+      this.setTodoAnimationCallback(todo, () => {
+        this.$set(this.todoProps, todo.id, { class: [], style: {} })
+      })
+    })
+  },
   methods: {
+    setTodoAnimationCallback (todo, callback) {
+      const todoRef = (this.$refs[`todoRef${todo.id}`] || [ false ])[0]
+      todoRef && todoRef.addEventListener('animationend', () => {
+        callback()
+      }, { once: true })
+    },
+    showDeletion (todo) {
+      this.todos.unshift(todo)
+      this.$set(this.todoProps[todo.id], 'class', [ 'done' ])
+      this.setTodoAnimationCallback(todo, () => {
+        const todoIndex = this.todos.findIndex(t => t.id == todo.id)
+        this.todos.splice(todoIndex, 1)
+        this.$set(this.todoProps, todo.id, {})
+      })
+    },
     todoClass (todo) {
       return this.todoProps[todo.id].class
     },
@@ -150,9 +173,13 @@ export default {
       this.$emit('swap-todo-back', this.stack)
     },
     todoIsDone (todo) {
-      todo.done = true
-      todo.doneDate = new Date()
-      this.$emit('update-todo', todo)
+      this.$set(this.todoProps[todo.id], 'class', ['done'])
+
+      this.setTodoAnimationCallback(todo, () => {
+        todo.done = true
+        todo.doneDate = new Date()
+        this.$emit('update-todo', todo)
+      })
     },
   }
 }
