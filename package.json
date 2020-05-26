@@ -23,7 +23,8 @@
     "quasar": "^1.0.0",
     "vue-i18n": "^8.0.0",
     "vue2-touch-events": "^2.2.1",
-    "vuefire": "^2.2.1"
+    "vuefire": "^2.2.1",
+    "vuexfire": "^3.2.2"
   },
   "devDependencies": {
     "@quasar/app": "^1.0.0",

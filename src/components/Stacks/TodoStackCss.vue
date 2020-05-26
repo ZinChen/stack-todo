@@ -6,7 +6,7 @@
       .stack-info
         .stack-title {{ stack.title }}
         .stack-progress
-          | {{ todos.length }} / {{ todosCount }}
+          | {{ todos.length }} / {{ allTodos.length }}
       .stack-buttons
         q-btn(
           v-if="todos.length > 1"
@@ -36,11 +36,12 @@
 </template>
 
 <style lang="sass">
-  @import '../css/todo-stack-css'
-  @import '../css/todo-stack-animation'
+  @import '../../css/todo-stack-css'
+  @import '../../css/todo-stack-animation'
 </style>
 
 <script>
+import { mapGetters } from 'vuex'
 import pull from 'lodash/pull'
 import isEmpty from 'lodash/isEmpty'
 
@@ -49,7 +50,7 @@ const preloaderLeaving = 0
 
 export default {
   name: 'todo-stack-css',
-  props: [ 'stack', 'todos', 'todosCount', 'zIndex' ],
+  props: [ 'stack', 'allTodos', 'todos', 'zIndex' ],
   data: function () {
     return {
       directionSign: 1,
@@ -58,6 +59,7 @@ export default {
   },
   computed: {
     todosReversed () {
+      console.log('computed todos', this.todos)
       return this.todos.slice().reverse()
     },
   },
@@ -158,19 +160,20 @@ export default {
         this.$set(this.todoProps[nextTodo.id], 'class', ['something'])
       }
 
-      this.$emit('swap-todo', this.stack)
+      this.$store.dispatch('swapTodo', this.stack)
     },
     swapTodoBack () {
       const todo = this.todos[0]
       const prevTodo = this.todos[this.todos.length - 1]
 
       this.$set(this.todoProps[prevTodo.id], 'class', ['swap-up'])
+
       // workaround for list with 2 items
       if (this.todos.length == 2) {
         this.$set(this.todoProps[todo.id], 'class', ['something'])
       }
 
-      this.$emit('swap-todo-back', this.stack)
+      this.$store.dispatch('swapTodoBack', this.stack)
     },
     todoIsDone (todo) {
       this.$set(this.todoProps[todo.id], 'class', ['done'])
@@ -178,7 +181,8 @@ export default {
       this.setTodoAnimationCallback(todo, () => {
         todo.done = true
         todo.doneDate = new Date()
-        this.$emit('update-todo', todo)
+
+        this.$store.dispatch('updateTodo', todo)
       })
     },
   }

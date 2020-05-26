@@ -4,565 +4,349 @@
       key="editor"
       :class="{'active-section': pageState.screen == 'editor'}"
     )
-      .container.todo-lists
+      todo-editor
 
-        .todo-list(
-          v-for="stack in stacks"
-          :key="stack.id"
-        )
-          .todo-list-header
-            input.input.todo-list-title(
-              v-model="stack.title"
-              placeholder="Stack title"
-              @input="setInputMode('stack', stack)"
-              @blur="blurStack(stack)"
-              v-on:keyup.enter="blurStack(stack)"
-            )
-          .todo-list-items
-            .todo-list-item(
-              v-for="todo in stackTodos(stack.id)"
-            )
-              q-icon.todo-item-icon(
-                v-if="todo.done"
-                name="done"
-                size="xs"
-                color="white"
-              )
-              .field.has-addons
-                p.control.todo-input
-                  input.input.todo-list-item-content(
-                    name="todo"
-                    v-model="todo.title"
-                    :disabled="todo.done"
-                    @input="setInputMode('todo', todo)"
-                    @blur="blurTodo(todo)"
-                    v-on:keyup.enter="blurTodo(todo)"
-                  )
-              q-btn(
-                flat
-                round
-                dense
-                icon="more_vert"
-                color="white"
-              )
-                q-menu
-                  q-list.todo-item-menu
-                    q-item(
-                      @click="toggleTodoDone(todo)"
-                      clickable
-                      v-close-popup
-                    )
-                      q-item-section(
-                        v-if="todo.done"
-                      )
-                        q-icon(
-                          name="radio_button_unchecked"
-                        )
-                        span Set undone
-                      q-item-section(
-                        v-else
-                      )
-                        q-icon(
-                          name="check_circle_outline"
-                        )
-                        span Set done
-                    q-separator
-                    q-item(
-                      @click="deleteTodo(todo)"
-                      clickable
-                      v-close-popup
-                    )
-                      q-item-section
-                        q-icon(
-                          name="delete"
-                        )
-                        | Delete
-            .todo-list-item.create-todo-list-item
-              input.input.todo-list-item-content(
-                placeholder="Type new todo"
-                v-model="stack.newTodoTitle",
-                @input="setInputMode('new_todo', stack)"
-                v-on:keyup.enter="createTodo(stack)"
-              )
-          .todo-list-buttons
-            q-btn(
-              round
-              icon="delete"
-              v-if="!stackTodos(stack.id).length"
-              color="deep-orange-9"
-              @click="deleteStack(stack)"
-            )
-
-        .create-todo-list
-          q-btn(
-            fab
-            @click="createStack"
-            icon="fas fa-plus"
-            color="white"
-            text-color="grey-5"
-          )
     .section.screen-section.stacks-section(
       key="stacks"
       :class="{'active-section': pageState.screen == 'stacks'}"
     )
-      .container
-        .todo-stack-list
-          todo-stack-css(
-            v-show="isLoaded"
-            v-for="(stack, index) in filteredStacks"
-            v-on:update-todo="updateTodo"
-            v-on:swap-todo="swapTodo"
-            v-on:swap-todo-back="swapTodoBack"
-            :key="stack.id"
-            :stack="stack"
-            :todos="stackTodosNotDone(stack.id)"
-            :todos-count="stackTodos(stack.id).length"
-            :z-index="stacks.length - index"
-          )
+      todo-stacks
 
-    transition(
-      appear
-      enter-active-class="animated zoomIn"
-      leave-active-class="animated zoomOut"
-    )
-      q-page-sticky.fab-container(
-        v-show="isEditorSimpleView"
-        position="bottom-right"
-        :offset="[25,25]"
-      )
-        transition(
-          appear
-          enter-active-class="animated zoomIn"
-          leave-active-class="animated zoomOut"
-        )
-          q-btn.second-fab(
-            @click="deleteAllDoneTodos"
-            v-show="doneTodos.length"
-            fab
-            color="accent"
-            icon="delete_sweep"
-          )
-        transition(
-          appear
-          enter-active-class="animated zoomIn"
-          leave-active-class="animated zoomOut"
-        )
-          q-btn.second-fab(
-            @click="restoreByHistory"
-            v-show="editorHistory.length"
-            fab
-            color="accent"
-            icon="undo"
-          )
-        q-btn(
-          @click="toggleView"
-          fab
-          color="accent"
-          icon="dynamic_feed"
-        )
-          //- icon="remove_red_eye"
-
-    transition(
-      appear
-      enter-active-class="animated zoomIn"
-      leave-active-class="animated zoomOut"
-    )
-      q-page-sticky.fab-container(
-        v-show="isEditorInputEditing"
-        position="bottom-right"
-        :offset="[25,25]"
-      )
-        q-btn(
-          @click="saveNewItem"
-          fab
-          color="accent"
-          icon="save"
-        )
-
-    transition(
-      appear
-      enter-active-class="animated zoomIn"
-      leave-active-class="animated zoomOut"
-    )
-      q-page-sticky.fab-container(
-        v-show="pageState.screen == 'stacks'"
-        position="bottom-right"
-        :offset="[25,25]"
-      )
-        transition(
-          appear
-          enter-active-class="animated zoomIn"
-          leave-active-class="animated zoomOut"
-        )
-          q-btn(
-            @click="undoLastTodo"
-            v-show="lastUndone"
-            transition="fade"
-            fab
-            color="accent"
-            icon="undo"
-          )
-        q-btn(
-          @click="toggleView"
-          fab
-          color="accent"
-          icon="edit"
-        )
-      //- q-fab(
-      //-   icon="more_horiz"
-      //-   direction="up"
-      //-   persistent=true
-      //-   color="amber"
-      //- )
-      //-   q-fab-action(
-      //-     @click="toggleView"
-      //-     color="accent"
-      //-     icon="edit"
-      //-   )
-      //-   q-fab-action(
-      //-     @click="undoLastTodo"
-      //-     color="accent"
-      //-     icon="undo"
-      //-   )
-
+    fab-menu-editor
+    fab-menu-stacks
 </template>
 
 <script>
 import firebase from 'firebase'
-import { fireApp } from 'boot/fire.js'
-import orderBy from 'lodash/orderBy'
-import findLast from 'lodash/findLast'
-import TodoStack from '../components/TodoStack'
-import TodoStackCss from '../components/TodoStackCss'
+import { mapState } from 'vuex'
+import TodoStacks from '../components/Stacks/TodoStacks'
+import TodoEditor from '../components/Editor/TodoEditor'
+import FabMenuEditor from '../components/FabMenu/FabMenuEditor'
+import FabMenuStacks from '../components/FabMenu/FabMenuStacks'
 
-const bindFirebase = function (context) {
-  // Todo: track, when collections received
-  const user = firebase.auth().currentUser
-  const stacksRef = fireApp.firestore()
-    .collection('users')
-    .doc(user.uid)
-    .collection('stacks')
+// const bindFirebase = function (context) {
+//   // Todo: track, when collections received
+//   const user = firebase.auth().currentUser
+//   const stacksRef = fireApp.firestore()
+//     .collection('users')
+//     .doc(user.uid)
+//     .collection('stacks')
 
-  context.stacksRef = stacksRef
-  context.$bind('stacks', stacksRef.where('deleted', "==", false)
-    .orderBy('createdAt')
-    // .then(() => {
-    //   // TODO: check when all will be loaded
-    // })
-  )
+//   context.stacksRef = stacksRef
+//   context.$bind('stacks', stacksRef.where('deleted', "==", false)
+//     .orderBy('createdAt')
+//     // .then(() => {
+//     //   // TODO: check when all will be loaded
+//     // })
+//   )
 
-  const todosRef = fireApp.firestore()
-    .collection('users')
-    .doc(user.uid)
-    .collection('todos')
+//   const todosRef = fireApp.firestore()
+//     .collection('users')
+//     .doc(user.uid)
+//     .collection('todos')
 
-  context.todosRef = todosRef
-  context.$bind('todos', todosRef.where('deleted', "==", false)
-    .orderBy('order')
-    // .then(() => {
-    //   // TODO: check when all will be loaded
-    // })
-  )
-}
+//   context.todosRef = todosRef
+//   context.$bind('todos', todosRef.where('deleted', "==", false)
+//     .orderBy('order')
+//     // .then(() => {
+//     //   // TODO: check when all will be loaded
+//     // })
+//   )
+// }
 
 export default {
   name: 'PageIndex',
-  components: { TodoStack, TodoStackCss },
+  components: { TodoStacks, TodoEditor, FabMenuStacks, FabMenuEditor },
   data () {
     return {
-      isLoaded: false,
-      todos: [],
-      stacks: [],
-      editorHistory: [],
-      pageState: {
-        screen: 'stacks', // 'editor',
-        mode: 'simple', // 'input_editing
-        input_data: {
-          type: '',
-          item: null
-        }
-      },
+      // isLoaded: false,
+      // todos: [],
+      // stacks: [],
+      // editorHistory: [],
+      // pageState: {
+      //   screen: 'stacks', // 'editor',
+      //   mode: 'simple', // 'input_editing
+      //   inputData: {
+      //     type: '',
+      //     item: null
+      //   }
+      // },
     }
   },
   computed: {
-    isEditorInputEditing () {
-      const {
-        screen,
-        mode
-      } = this.pageState
-      return screen == 'editor' && mode == 'input_editing'
-    },
-    isEditorSimpleView () {
-      const {
-        screen,
-        mode
-      } = this.pageState
-      return screen == 'editor' && mode != 'input_editing'
-    },
-    stackTodos () {
-      return stackId => this.todos.filter(todo => todo.stackId === stackId)
-    },
-    stackTodosNotDone () {
-      return stackId => this.todos.filter(todo => todo.stackId === stackId && !todo.done)
-    },
-    doneTodos () {
-      return this.todos.filter(todo => todo.done)
-    },
-    filteredStacks () {
-      const nonEmptyStackIds = [...new Set(this.todos.map(todo => todo.stackId))]
-      return this.stacks.filter(stack => nonEmptyStackIds.includes(stack.id))
-    },
-    lastUndone () {
-      let lastTodo = { doneDate: 0 }
-      this.todos.find(todo => {
-        if (todo.done && todo.doneDate > lastTodo.doneDate) {
-          lastTodo = todo
-        }
-      })
-      return lastTodo.done && lastTodo
-    }
+    ...mapState([
+      'pageState'
+    ])
+    // isEditorInputEditing () {
+    //   const {
+    //     screen,
+    //     mode
+    //   } = this.pageState
+    //   return screen == 'editor' && mode == 'input_editing'
+    // },
+    // isEditorSimpleView () {
+    //   const {
+    //     screen,
+    //     mode
+    //   } = this.pageState
+    //   return screen == 'editor' && mode != 'input_editing'
+    // },
+    // stackTodos () {
+    //   return stackId => this.todos.filter(todo => todo.stackId === stackId)
+    // },
+    // stackTodosNotDone () {
+    //   return stackId => this.todos.filter(todo => todo.stackId === stackId && !todo.done)
+    // },
+    // doneTodos () {
+    //   return this.todos.filter(todo => todo.done)
+    // },
+    // filteredStacks () {
+    //   const nonEmptyStackIds = [...new Set(this.todos.map(todo => todo.stackId))]
+    //   return this.stacks.filter(stack => nonEmptyStackIds.includes(stack.id))
+    // },
+    // lastDone () {
+    //   let lastTodo = { doneDate: 0 }
+    //   this.todos.find(todo => {
+    //     if (todo.done && todo.doneDate > lastTodo.doneDate) {
+    //       lastTodo = todo
+    //     }
+    //   })
+    //   return lastTodo.done && lastTodo
+    // }
   },
-  beforeCreate: function () {
-    this.$root.$on('auth_state', (state) => {
-      if (state === 'logged_in') {
-        bindFirebase(this)
-      } else {
-        this.$unbind('stacks')
-        this.$unbind('todos')
-      }
-    })
-    this.$root.$on('loading_state', (state) => {
-      this.isLoaded = state == 'loaded'
-    })
-  },
+  // beforeCreate: function () {
+  //   // this.$root.$on('auth_state', (state) => {
+  //   //   if (state === 'logged_in') {
+  //   //     bindFirebase(this)
+  //   //   } else {
+  //   //     this.$unbind('stacks')
+  //   //     this.$unbind('todos')
+  //   //   }
+  //   // })
+  //   // this.$root.$on('loading_state', (state) => {
+  //   //   this.isLoaded = state == 'loaded'
+  //   // })
+  // },
   created: function () {
-    firebase.auth().currentUser && bindFirebase(this)
+    const user = firebase.auth().currentUser
+    if (user) {
+      this.$store.dispatch('bindFirestoreTodosRef', user)
+      this.$store.dispatch('bindFirestoreStacksRef', user)
+    }
   },
   methods: {
-    toggleView () {
-      if (this.pageState.screen === 'stacks') {
-        this.pageState.screen = 'editor'
-      } else {
-        this.saveNewTodos()
-        this.pageState.screen = 'stacks'
-      }
-    },
-    setInputMode (type, item) {
-      this.pageState.mode = 'input_editing'
-      this.pageState.input_data.type = type
-      this.pageState.input_data.item = item
-    },
-    createTodo (stack) {
-      if (this.pageState.mode != 'input_editing') {
-        return
-      }
-      this.pageState.mode = 'simple'
+    // toggleView () {
+    //   if (this.pageState.screen === 'stacks') {
+    //     this.pageState.screen = 'editor'
+    //   } else {
+    //     this.saveNewTodos()
+    //     this.pageState.screen = 'stacks'
+    //   }
+    // },
+    // setInputMode (type, item) {
+    //   this.pageState.mode = 'input_editing'
+    //   this.pageState.inputData.type = type
+    //   this.pageState.inputData.item = item
+    // },
+    // createTodo (stack) {
+    //   if (this.pageState.mode != 'input_editing') {
+    //     return
+    //   }
 
-      const lastTodo = findLast(this.stackTodos(stack.id))
-      const order = lastTodo ? lastTodo.order + 1 : 0
-      const todo = {
-        stackId: stack.id,
-        title: stack.newTodoTitle,
-        createdAt: new Date(),
-        deleted: false,
-        order
-      }
+    //   this.$store.dispatch('setPageStateMode', 'simple')
+    //   this.$store.dispatch('createTodo', stack)
+    // },
+    // blurTodo (todo) {
+    //   if (this.pageState.mode == 'input_editing') {
+    //     this.updateTodo(todo)
+    //     this.pageState.mode = 'simple'
+    //   }
+    // },
+    // updateTodo (todo) {
+    //   this.todosRef.doc(todo.id).update(todo)
+    // },
+    // deleteTodo (todo) {
+    //   // this.editorHistory.push({
+    //   //   type: 'todo',
+    //   //   id: todo.id
+    //   // })
+    //   // this.todosRef.doc(todo.id).update({
+    //   //   deleted: true,
+    //   //   deletedAt: new Date(),
+    //   // })
+    // },
+    // createStack () {
+    //   this.stacksRef.add({
+    //     createdAt: new Date(),
+    //     title: '',
+    //     deleted: false,
+    //   })
+    // },
+    // blurStack (stack) {
+    //   if (this.pageState.mode == 'input_editing') {
+    //     this.updateStack(stack)
+    //     this.pageState.mode = 'simple'
+    //   }
+    // },
+    // updateStack (stack) {
+    //   // this.stacksRef.doc(stack.id).update(stack)
+    //   // this.pageState.mode = 'simple'
+    // },
+    // deleteStack (stack) {
+    //   // this.editorHistory.push({
+    //   //   type: 'stack',
+    //   //   id: stack.id
+    //   // })
+    //   // this.stacksRef.doc(stack.id).update({
+    //   //   deleted: true,
+    //   //   deletedAt: new Date(),
+    //   // })
+    // },
+    // saveNewTodos () {
+    //   this.stacks.forEach(stack => {
+    //     if (stack.newTodoTitle) {
+    //       this.createTodo(stack)
+    //     }
+    //   })
+    // },
+    // saveNewItem () {
+    //   const {
+    //     type,
+    //     item
+    //   } = this.pageState.inputData
 
-      stack.newTodoTitle = ''
+    //   // ugly short alternative
 
-      this.todosRef.add(todo)
-    },
-    blurTodo (todo) {
-      if (this.pageState.mode == 'input_editing') {
-        this.updateTodo(todo)
-        this.pageState.mode = 'simple'
-      }
-    },
-    updateTodo (todo) {
-      this.todosRef.doc(todo.id).update(todo)
-    },
-    deleteTodo (todo) {
-      this.editorHistory.push({
-        type: 'todo',
-        id: todo.id
-      })
-      this.todosRef.doc(todo.id).update({
-        deleted: true,
-        deletedAt: new Date(),
-      })
-    },
-    createStack () {
-      this.stacksRef.add({
-        createdAt: new Date(),
-        title: '',
-        deleted: false,
-      })
-    },
-    blurStack (stack) {
-      if (this.pageState.mode == 'input_editing') {
-        this.updateStack(stack)
-        this.pageState.mode = 'simple'
-      }
-    },
-    updateStack (stack) {
-      this.stacksRef.doc(stack.id).update(stack)
-      this.pageState.mode = 'simple'
-    },
-    deleteStack (stack) {
-      this.editorHistory.push({
-        type: 'stack',
-        id: stack.id
-      })
-      this.stacksRef.doc(stack.id).update({
-        deleted: true,
-        deletedAt: new Date(),
-      })
-    },
-    saveNewTodos () {
-      this.stacks.forEach(stack => {
-        if (stack.newTodoTitle) {
-          this.createTodo(stack)
-        }
-      })
-    },
-    saveNewItem () {
-      const {
-        type,
-        item
-      } = this.pageState.input_data
+    //   // const methods = {
+    //   //   stack: 'updateStack',
+    //   //   todo: 'updateTodo',
+    //   //   new_todo: 'createTodo'
+    //   // }
+    //   // if (Object.keys(methods).includes(type)) {
+    //   //   this[methods[type]]()
+    //   // }
 
-      // ugly short alternative
+    //   switch (type) {
+    //     case 'stack':
+    //       this.blurStack(item)
+    //       break
 
-      // const methods = {
-      //   stack: 'updateStack',
-      //   todo: 'updateTodo',
-      //   new_todo: 'createTodo'
-      // }
-      // if (Object.keys(methods).includes(type)) {
-      //   this[methods[type]]()
-      // }
+    //     case 'todo':
+    //       this.blurTodo(item)
+    //       break
 
-      switch (type) {
-        case 'stack':
-          this.blurStack(item)
-          break
+    //     case 'new_todo':
+    //       this.createTodo(item)
+    //       break
+    //   }
+    // },
+    // deleteAllDoneTodos () {
+    //   let doneTodoIds = this.todos.filter(todo => todo.done).map(todo => todo.id)
+    //   this.editorHistory.push({
+    //     type: 'todo_batch',
+    //     ids: doneTodoIds
+    //   })
 
-        case 'todo':
-          this.blurTodo(item)
-          break
+    //   const batch = fireApp.firestore().batch()
 
-        case 'new_todo':
-          this.createTodo(item)
-          break
-      }
-    },
-    deleteAllDoneTodos () {
-      let doneTodoIds = this.todos.filter(todo => todo.done).map(todo => todo.id)
-      this.editorHistory.push({
-        type: 'todo_batch',
-        ids: doneTodoIds
-      })
+    //   doneTodoIds.forEach(todoId => {
+    //     this.todosRef.doc(todoId).update({
+    //       deleted: true,
+    //       deletedAt: new Date()
+    //     })
+    //   })
 
-      const batch = fireApp.firestore().batch()
+    //   batch.commit()
+    // },
+    // restoreByHistory () {
+    //   const {
+    //     editorHistory: history
+    //   } = this
 
-      doneTodoIds.forEach(todoId => {
-        this.todosRef.doc(todoId).update({
-          deleted: true,
-          deletedAt: new Date()
-        })
-      })
+    //   if (!history.length) {
+    //     return false
+    //   }
 
-      batch.commit()
-    },
-    restoreByHistory () {
-      const {
-        editorHistory: history
-      } = this
+    //   const historyItem = history.splice(history.length - 1, 1)[0]
 
-      if (!history.length) {
-        return false
-      }
+    //   const newValue = {
+    //     deleted: false,
+    //     deletedAt: firebase.firestore.FieldValue.delete(),
+    //   }
 
-      const historyItem = history.splice(history.length - 1, 1)[0]
+    //   switch (historyItem.type) {
+    //     case 'todo':
+    //       // TODO: place deleted to first place
+    //       this.todosRef.doc(historyItem.id).update(newValue)
+    //       break
 
-      const newValue = {
-        deleted: false,
-        deletedAt: firebase.firestore.FieldValue.delete(),
-      }
+    //     case 'stack':
+    //       this.stacksRef.doc(historyItem.id).update(newValue)
+    //       break
 
-      switch (historyItem.type) {
-        case 'todo':
-          // TODO: place deleted to first place
-          this.todosRef.doc(historyItem.id).update(newValue)
-          break
+    //     case 'todo_batch':
+    //       // TODO: place deleted to first place
+    //       const batch = fireApp.firestore().batch()
 
-        case 'stack':
-          this.stacksRef.doc(historyItem.id).update(newValue)
-          break
+    //       historyItem.ids.forEach(id => {
+    //         this.todosRef.doc(id).update(newValue)
+    //       })
 
-        case 'todo_batch':
-          // TODO: place deleted to first place
-          const batch = fireApp.firestore().batch()
+    //       batch.commit()
+    //       break
 
-          historyItem.ids.forEach(id => {
-            this.todosRef.doc(id).update(newValue)
-          })
+    //     default:
+    //       break
+    //   }
+    // },
+    // toggleTodoDone (todo) {
+    //   if (todo.done) {
+    //     todo.done = false
+    //     todo.doneDate = firebase.firestore.FieldValue.delete()
+    //   } else {
+    //     todo.done = true
+    //     todo.doneDate = new Date()
+    //   }
+    //   this.updateTodo(todo)
+    // },
+    // undoLastTodo (e) {
+    //   const lastTodo = this.lastDone
 
-          batch.commit()
-          break
+    //   if (lastTodo) {
+    //     lastTodo.done = false
+    //     // lastTodo.doneDate = firebase.firestore.FieldValue.delete()
+    //     // TODO: place deleted to first place
+    //     this.updateTodo(lastTodo)
+    //   }
+    // },
+    // swapTodo (stack) {
+    //   const stackTodos = this.stackTodosNotDone(stack.id)
+    //   const currentTodo = stackTodos[0]
 
-        default:
-          break
-      }
-    },
-    toggleTodoDone (todo) {
-      if (todo.done) {
-        todo.done = false
-        todo.doneDate = firebase.firestore.FieldValue.delete()
-      } else {
-        todo.done = true
-        todo.doneDate = new Date()
-      }
-      this.updateTodo(todo)
-    },
-    undoLastTodo (e) {
-      const lastTodo = this.lastUndone
+    //   const batch = fireApp.firestore().batch()
 
-      if (lastTodo) {
-        lastTodo.done = false
-        // lastTodo.doneDate = firebase.firestore.FieldValue.delete()
-        // TODO: place deleted to first place
-        this.updateTodo(lastTodo)
-      }
-    },
-    swapTodo (stack) {
-      const stackTodos = this.stackTodosNotDone(stack.id)
-      const currentTodo = stackTodos[0]
+    //   batch.update(this.todosRef.doc(currentTodo.id), { order: stackTodos.length - 1 })
 
-      const batch = fireApp.firestore().batch()
+    //   stackTodos.slice(1).forEach((todo, index) => {
+    //     batch.update(this.todosRef.doc(todo.id), { order: index })
+    //   })
 
-      batch.update(this.todosRef.doc(currentTodo.id), { order: stackTodos.length - 1 })
+    //   batch.commit()
+    // },
+    // swapTodoBack (stack) {
+    //   const stackTodos = this.stackTodosNotDone(stack.id)
+    //   const prevTodo = stackTodos[stackTodos.length - 1]
 
-      stackTodos.slice(1).forEach((todo, index) => {
-        batch.update(this.todosRef.doc(todo.id), { order: index })
-      })
+    //   const batch = fireApp.firestore().batch()
 
-      batch.commit()
-    },
-    swapTodoBack (stack) {
-      const stackTodos = this.stackTodosNotDone(stack.id)
-      const prevTodo = stackTodos[stackTodos.length - 1]
+    //   batch.update(this.todosRef.doc(prevTodo.id), { order: 0 })
 
-      const batch = fireApp.firestore().batch()
+    //   stackTodos.slice(0, stackTodos.length - 1).forEach((todo, index) => {
+    //     batch.update(this.todosRef.doc(todo.id), { order: index + 1 })
+    //   })
 
-      batch.update(this.todosRef.doc(prevTodo.id), { order: 0 })
-
-      stackTodos.slice(0, stackTodos.length - 1).forEach((todo, index) => {
-        batch.update(this.todosRef.doc(todo.id), { order: index + 1 })
-      })
-
-      batch.commit()
-    }
+    //   batch.commit()
+    // }
   }
 }
 </script>

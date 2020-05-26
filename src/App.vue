@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import { mapState, mapMutations, mapActions } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 import firebase from 'firebase'
 import Preloader from 'components/Preloader'
@@ -45,13 +46,10 @@ const login = function () {
 export default {
   name: 'App',
   components: { Preloader },
-  data: function () {
-    return {
-      authState: 'init',
-      loadingState: 'loading',
-      user: {},
-    }
-  },
+  computed: mapState([
+    'loadingState',
+    'user'
+  ]),
   // TODO: Try to use signup with login and password if it's not web
   beforeCreate: function () {
     // firebase.auth().getRedirectResult()
@@ -59,21 +57,22 @@ export default {
       if (isEmpty(user)) {
         login()
       } else if (user) {
-        this.authState = 'logged_in'
-        this.user = user
-        this.$root.$emit('auth_state', this.authState)
-        this.loadingState = 'loaded'
-        this.$root.$emit('loading_state', this.loadingState)
+        console.log('user in App', user)
+        this.setAuthState('logged_in')
+        this.setLoadingState('loaded')
+        this.setUser(user)
+        this.bindFirestoreTodosRef(user)
+        this.bindFirestoreStacksRef(user)
       }
     })
   },
   methods: {
     logout: function () {
       firebase.auth().signOut().then(() => {
-        this.authState = 'logout'
-        this.loadingState = 'loading'
-        this.user = {}
-        this.$root.$emit('auth_state', this.authState)
+        this.setAuthState('logout')
+        this.setLoadingState('loading')
+        this.setUser({})
+        this.unbindFirestoreRefs()
       }, (error) => {
         console.log('error on logout: ', error)
       })
@@ -81,7 +80,17 @@ export default {
     login,
     test: function () {
       console.log('just for test')
-    }
+    },
+    ...mapMutations([
+      'setUser',
+      'setAuthState',
+      'setLoadingState',
+    ]),
+    ...mapActions([
+      'bindFirestoreTodosRef',
+      'bindFirestoreStacksRef',
+      'unbindFirestoreRefs',
+    ])
   }
 }
 </script>

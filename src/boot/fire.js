@@ -1,11 +1,15 @@
-// import something here
 import firebase from 'firebase'
-import { firestorePlugin } from 'vuefire'
+// import { firestorePlugin } from 'vuefire'
 import firebaseConfig from './firebaseConfig'
 
 export const fireApp = firebase.initializeApp(firebaseConfig)
 
-// "async" is optional
-export default ({ Vue /* app, router, Vue, ... */ }) => {
-  Vue.use(firestorePlugin)
-}
+export const todosRefGetter = (user) => fireApp.firestore()
+  .collection('users')
+  .doc(user.uid)
+  .collection('todos')
+
+export const stacksRefGetter = (user) => fireApp.firestore()
+  .collection('users')
+  .doc(user.uid)
+  .collection('stacks')
