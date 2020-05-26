@@ -15,8 +15,8 @@
         leave-active-class="animated zoomOut"
       )
         q-btn.second-fab(
-          @click="deleteAllDoneTodos"
           v-show="isDoneTodos"
+          @click="deleteAllDoneTodos"
           fab
           color="accent"
           icon="delete_sweep"

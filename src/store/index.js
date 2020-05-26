@@ -4,7 +4,7 @@ import { vuexfireMutations } from 'vuexfire'
 import state from './state'
 import * as getters from './getters'
 import * as mutations from './mutations'
-import * as actions from './actions'
+import * as actionsBasic from './actionsBasic'
 import * as actionsHistory from './actionsHistory'
 import * as actionsFirebase from './actionsFirebase'
 import * as actionsPage from './actionsPage'
@@ -22,7 +22,7 @@ export default function () {
       ...mutations
     },
     actions: {
-      ...actions,
+      ...actionsBasic,
       ...actionsHistory,
       ...actionsFirebase,
       ...actionsPage,
