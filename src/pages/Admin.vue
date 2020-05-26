@@ -6,8 +6,22 @@
           color="amber"
           @click="addOrders"
         ) Add orders
+
+        q-btn(
+          color="amber"
+          @click="restoreTodayTodos"
+        ) Restore today
     .section
       .container
+        div loadingState:
+          p {{loadingState}}
+
+        div All Stacks:
+          p {{allStacks}}
+
+        div All Todos:
+          p {{allTodos}}
+
         .stacks Stacks:
           p {{stacks}}
 
@@ -17,40 +31,37 @@
 
 <script>
 import firebase from 'firebase'
-import { fireApp } from 'boot/fire.js'
+import { mapState } from 'vuex'
+import { fireApp, todosRefGetter, stacksRefGetter } from 'boot/fire.js'
 import orderBy from 'lodash/orderBy'
 
 export default {
   name: 'PageAdmin',
-  data: function () {
-    return {
-      stacks: [],
-      todos: []
-    }
+  computed: {
+    todayDoneTodos () {
+      const dayBeforeDate = new Date(new Date().setDate(new Date().getDate() - 1))
+      return this.allTodos.filter(todo => todo.deletedAt && todo.deletedAt.toDate() > dayBeforeDate)
+    },
+    ...mapState([
+      'loadingState',
+      'authState',
+      'stacks',
+      'todos',
+      'allTodos',
+      'allStacks'
+    ]),
   },
-  beforeCreate: function () {
-    this.$root.$on('state_update', (state) => {
-      if (state === 'logged_in') {
+  watch: {
+    authState (value) {
+      if (value == 'logged_in') {
         const user = firebase.auth().currentUser
-        const stacksRef = fireApp.firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('stacks')
+        this.stacksRef = stacksRefGetter(user)
+        this.todosRef = todosRefGetter(user)
 
-        this.stacksRef = stacksRef
-        this.$bind('stacks', stacksRef)
-
-        const todosRef = fireApp.firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('todos')
-
-        this.todosRef = todosRef
-        this.$bind('todos', todosRef)
-      } else {
-        this.unbind('stacks')
+        this.$store.dispatch('bindFirestoreAllTodosRef')
+        this.$store.dispatch('bindFirestoreAllStacksRef')
       }
-    })
+    }
   },
   methods: {
     addOrders () {
@@ -77,6 +88,15 @@ export default {
           console.log('date', date)
           this.stacksRef.doc(stack.id).update({ createdAt: date })
         }
+      })
+    },
+    restoreTodayTodos () {
+      this.todayDoneTodos.forEach(todo => {
+        this.$store.dispatch('updateTodo', {
+          ...todo,
+          id: todo.id,
+          deleted: false
+        })
       })
     }
   }

@@ -4,12 +4,12 @@ import firebaseConfig from './firebaseConfig'
 
 export const fireApp = firebase.initializeApp(firebaseConfig)
 
-export const todosRefGetter = (user) => fireApp.firestore()
+export const todosRefGetter = () => fireApp.firestore()
   .collection('users')
-  .doc(user.uid)
+  .doc(firebase.auth().currentUser.uid)
   .collection('todos')
 
-export const stacksRefGetter = (user) => fireApp.firestore()
+export const stacksRefGetter = () => fireApp.firestore()
   .collection('users')
-  .doc(user.uid)
+  .doc(firebase.auth().currentUser.uid)
   .collection('stacks')

@@ -7,7 +7,10 @@ export function toggleView ({ state, commit }) {
   }
 }
 
-export function setInputMode ({ commit }, inputData) {
+export function setInputMode ({ commit }) {
   commit('setPageStateMode', 'input_editing')
-  commit('setInputData', inputData)
+}
+
+export function setSimpleMode ({ commit }) {
+  commit('setPageStateMode', 'simple')
 }

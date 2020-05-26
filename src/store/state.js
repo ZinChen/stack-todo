@@ -2,6 +2,8 @@ export default function () {
   return {
     loadingState: 'loading',
     authState: '',
+    allTodos: [],
+    allStacks: [],
     todos: [],
     stacks: [],
     editorHistory: [],

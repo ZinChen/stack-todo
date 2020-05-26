@@ -1,8 +1,3 @@
-/*
-export function someGetter (state) {
-}
-*/
-
 export const isLoaded = (state) => {
   return state.loadingState == 'loaded'
 }

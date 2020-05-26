@@ -59,7 +59,6 @@ export default {
   },
   computed: {
     todosReversed () {
-      console.log('computed todos', this.todos)
       return this.todos.slice().reverse()
     },
   },
@@ -179,10 +178,12 @@ export default {
       this.$set(this.todoProps[todo.id], 'class', ['done'])
 
       this.setTodoAnimationCallback(todo, () => {
-        todo.done = true
-        todo.doneDate = new Date()
+        const update = {
+          done: true,
+          doneDate: new Date()
+        }
 
-        this.$store.dispatch('updateTodo', todo)
+        this.$store.dispatch('updateTodo', { todo, update })
       })
     },
   }

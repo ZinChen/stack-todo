@@ -51,8 +51,9 @@
       position="bottom-right"
       :offset="[25,25]"
     )
+      //- input save will fire on input blur event
       q-btn(
-        @click="saveNewItem"
+        @click="setSimpleMode"
         fab
         color="accent"
         icon="save"
@@ -75,7 +76,7 @@ export default {
     'toggleView',
     'deleteAllDoneTodos',
     'restoreByHistory',
-    'saveNewItem'
+    'setSimpleMode'
   ])
 }
 </script>

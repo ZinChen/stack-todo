@@ -6,11 +6,11 @@
     )
       .todo-list-header
         input.input.todo-list-title(
-          v-model="stack.title"
+          :value="stack.title"
           placeholder="Stack title"
-          @input="setInputMode('stack', stack)"
-          @blur="blurStack(stack)"
-          v-on:keyup.enter="blurStack(stack)"
+          @input="setInputMode"
+          @blur="e => onBlurStack(e, stack)"
+          @keyup.enter="e => onBlurStack(e, stack)"
         )
       .todo-list-items
         .todo-list-item(
@@ -26,11 +26,11 @@
             p.control.todo-input
               input.input.todo-list-item-content(
                 name="todo"
-                v-model="todo.title"
+                :value="todo.title"
                 :disabled="todo.done"
-                @input="setInputMode('todo', todo)"
-                @blur="blurTodo(todo)"
-                v-on:keyup.enter="blurTodo(todo)"
+                @input="setInputMode"
+                @blur="e => onBlurTodo(e, todo)"
+                @keyup.enter="e => onBlurTodo(e, todo)"
               )
           q-btn(
             flat
@@ -74,9 +74,9 @@
         .todo-list-item.create-todo-list-item
           input.input.todo-list-item-content(
             placeholder="Type new todo"
-            v-model="stack.newTodoTitle",
-            @input="setInputMode('new_todo', stack)"
-            v-on:keyup.enter="onCreateTodo(stack)"
+            @input="setInputMode"
+            @blur="e => onCreateTodo(e, stack)"
+            @keyup.enter="e => onCreateTodo(e, stack)"
           )
       .todo-list-buttons
         q-btn(
@@ -98,7 +98,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 
 export default {
   name: 'todo-editor',
@@ -109,31 +109,31 @@ export default {
     ...mapGetters([
       'stackTodos',
       'pageMode'
-    ])
+    ]),
   },
   methods: {
-    onCreateTodo (stack) {
-      if (this.pageMode != 'input_editing') {
-        return
+    onCreateTodo (e, stack) {
+      const newTodoTitle = e.target.value
+      e.target.value = ''
+      this.setSimpleMode()
+      if (newTodoTitle.length > 0) {
+        this.createTodo({ stack, newTodoTitle })
       }
-
-      this.setPageStateMode('simple')
-      this.createTodo(stack)
     },
-    onBlurTodo (todo) {
-      if (this.pageMode == 'input_editing') {
-        this.updateTodo(todo)
-        this.setPageStateMode('simple')
+    onBlurTodo (e, todo) {
+      this.setSimpleMode()
+      if (todo.title != e.target.value) {
+        this.updateTodo({ todo, update: { title: e.target.value } })
       }
     },
     onDeleteTodo (todo) {
       this.pushTodoToHistory(todo)
       this.deleteTodo(todo)
     },
-    onBlurStack (stack) {
-      if (this.pageMode == 'input_editing') {
-        this.updateStack(stack)
-        this.setPageStateMode('simple')
+    onBlurStack (e, stack) {
+      this.setSimpleMode()
+      if (stack.title != e.target.value) {
+        this.updateStack({ stack, update: { title: e.target.value } })
       }
     },
     onDeleteStack (stack) {
@@ -142,7 +142,7 @@ export default {
     },
     ...mapActions([
       'setInputMode',
-      'setPageStateMode',
+      'setSimpleMode',
 
       'createTodo',
       'updateTodo',

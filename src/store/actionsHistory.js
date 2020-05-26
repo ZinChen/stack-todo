@@ -1,30 +1,30 @@
 import firebase from 'firebase'
 import { fireApp, todosRefGetter, stacksRefGetter } from 'boot/fire.js'
 
-export function pushTodoToHistory ({ state }, todo) {
-  state.editorHistory.push({
+export function pushTodoToHistory ({ commit }, todo) {
+  commit('pushToHistory', {
     type: 'todo',
     id: todo.id
   })
 }
 
-export function pushStackToHistory ({ state }, stack) {
-  state.editorHistory.push({
+export function pushStackToHistory ({ commit }, stack) {
+  commit('pushToHistory', {
     type: 'stack',
     id: stack.id
   })
 }
 
-export function pushTodoBatchToHistory ({ state }, todos) {
+export function pushTodoBatchToHistory ({ commit }, todos) {
   const doneTodoIds = todos.filter(todo => todo.done).map(todo => todo.id)
 
-  state.editorHistory.push({
+  commit('pushToHistory', {
     type: 'todo_batch',
     ids: doneTodoIds
   })
 }
 
-export function restoreByHistory ({ state }) {
+export function restoreByHistory ({ state, commit }) {
   const {
     editorHistory: history
   } = state
@@ -33,10 +33,11 @@ export function restoreByHistory ({ state }) {
     return false
   }
 
-  const todosRef = todosRefGetter(state.user)
-  const stacksRef = stacksRefGetter(state.user)
+  const todosRef = todosRefGetter()
+  const stacksRef = stacksRefGetter()
 
-  const historyItem = history.splice(history.length - 1, 1)[0]
+  const historyItem = [ ...history ].pop()
+  commit('popFromHistory')
 
   const newValue = {
     deleted: false,
@@ -58,7 +59,7 @@ export function restoreByHistory ({ state }) {
       const batch = fireApp.firestore().batch()
 
       historyItem.ids.forEach(id => {
-        state.todosRef.doc(id).update(newValue)
+        todosRef.doc(id).update(newValue)
       })
 
       batch.commit()

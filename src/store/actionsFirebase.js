@@ -3,8 +3,8 @@ import { fireApp, todosRefGetter, stacksRefGetter } from 'boot/fire.js'
 
 export const bindFirestoreTodosRef = firestoreAction(({
   bindFirestoreRef,
-}, user) => {
-  const todosRef = todosRefGetter(user)
+}) => {
+  const todosRef = todosRefGetter()
 
   return bindFirestoreRef(
     'todos',
@@ -19,14 +19,44 @@ export const bindFirestoreTodosRef = firestoreAction(({
 export const bindFirestoreStacksRef = firestoreAction(({
   bindFirestoreRef,
   commit,
-}, user) => {
-  const stacksRef = stacksRefGetter(user)
+}) => {
+  const stacksRef = stacksRefGetter()
 
   return bindFirestoreRef(
     'stacks',
     stacksRef
       .where('deleted', "==", false)
       .orderBy('createdAt')
+  )
+    .then(data => {
+    })
+})
+
+export const bindFirestoreAllTodosRef = firestoreAction(({
+  bindFirestoreRef,
+}) => {
+  const todosRef = todosRefGetter()
+
+  return bindFirestoreRef(
+    'allTodos',
+    todosRef
+      .orderBy('createdAt', 'desc')
+      .limit(1000)
+  )
+    .then(data => {
+    })
+})
+
+export const bindFirestoreAllStacksRef = firestoreAction(({
+  bindFirestoreRef,
+}) => {
+  const stacksRef = stacksRefGetter()
+
+  return bindFirestoreRef(
+    'allStacks',
+    stacksRef
+      .orderBy('createdAt', 'desc')
+      .limit(1000)
   )
     .then(data => {
     })

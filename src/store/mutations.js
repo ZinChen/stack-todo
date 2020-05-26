@@ -22,7 +22,11 @@ export function setPageStateMode (state, mode) {
   state.pageState.mode = mode
 }
 
-export function setPageStateInputData (state, { type, item }) {
-  state.pageState.inputData.type = type
-  state.pageState.inputData.item = item
+export function pushToHistory (state, historyItem) {
+  window.testState = state
+  state.editorHistory.push(historyItem)
+}
+
+export function popFromHistory (state) {
+  state.editorHistory.pop()
 }

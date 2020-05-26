@@ -61,8 +61,8 @@ export default {
         this.setAuthState('logged_in')
         this.setLoadingState('loaded')
         this.setUser(user)
-        this.bindFirestoreTodosRef(user)
-        this.bindFirestoreStacksRef(user)
+        this.bindFirestoreTodosRef()
+        this.bindFirestoreStacksRef()
       }
     })
   },
