@@ -32,45 +32,9 @@
                 @blur="e => onBlurTodo(e, todo)"
                 @keyup.enter="e => onBlurTodo(e, todo)"
               )
-          q-btn(
-            flat
-            round
-            dense
-            icon="more_vert"
-            color="white"
+          todo-item-menu(
+            :todo="todo"
           )
-            q-menu
-              q-list.todo-item-menu
-                q-item(
-                  @click="toggleTodoDone(todo)"
-                  clickable
-                  v-close-popup
-                )
-                  q-item-section(
-                    v-if="todo.done"
-                  )
-                    q-icon(
-                      name="radio_button_unchecked"
-                    )
-                    span Set undone
-                  q-item-section(
-                    v-else
-                  )
-                    q-icon(
-                      name="check_circle_outline"
-                    )
-                    span Set done
-                q-separator
-                q-item(
-                  @click="onDeleteTodo(todo)"
-                  clickable
-                  v-close-popup
-                )
-                  q-item-section
-                    q-icon(
-                      name="delete"
-                    )
-                    | Delete
         .todo-list-item.create-todo-list-item
           input.input.todo-list-item-content(
             placeholder="Type new todo"
@@ -99,9 +63,11 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import TodoItemMenu from './TodoItemMenu'
 
 export default {
   name: 'todo-editor',
+  components: { TodoItemMenu },
   computed: {
     ...mapState([
       'stacks'
@@ -126,10 +92,6 @@ export default {
         this.updateTodo({ todo, update: { title: e.target.value } })
       }
     },
-    onDeleteTodo (todo) {
-      this.pushTodoToHistory(todo)
-      this.deleteTodo(todo)
-    },
     onBlurStack (e, stack) {
       this.setSimpleMode()
       if (stack.title != e.target.value) {
@@ -146,15 +108,12 @@ export default {
 
       'createTodo',
       'updateTodo',
-      'pushTodoToHistory',
-      'deleteTodo',
 
       'createStack',
       'updateStack',
       'pushStackToHistory',
       'deleteStack',
 
-      'toggleTodoDone'
     ])
   }
 }

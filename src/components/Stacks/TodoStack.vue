@@ -6,7 +6,7 @@
       .stack-info
         .stack-title {{ stack.title }}
         .stack-progress
-          | {{ todos.length }} / {{ todosCount }}
+          | {{ todos.length }} / {{ allTodos.length }}
       .stack-buttons
         q-btn(
           round
@@ -54,7 +54,7 @@ import { gsap } from 'gsap'
 
 export default {
   name: 'todo-stack',
-  props: [ 'stack', 'todos', 'todosCount' ],
+  props: [ 'stack', 'todos', 'allTodos' ],
   data: function () {
     return {
       isMove: false,
@@ -204,10 +204,12 @@ export default {
     },
     todoIsDone () {
       const todo = this.currentTodo
-      todo.done = true
-      todo.doneDate = new Date()
+      const update = {
+        done: true,
+        doneDate: new Date(),
+      }
 
-      this.$emit('update-todo', todo)
+      this.$store.dispatch('updateTodo', { todo, update })
     },
     computeTodoStyle ({ dx, dy }) {
       const isMoving = dx != 0 || dy != 0
@@ -341,7 +343,7 @@ export default {
           boxShadow: this.boxShadow(15),
           onComplete: () => {
             this.animateNextTodo(nextTodoRef)
-            this.$emit('swap-todo', this.stack)
+            this.$store.dispatch('swapTodo', this.stack)
           }
         })
         .to(todoRef, {

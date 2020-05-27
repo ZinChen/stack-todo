@@ -15,6 +15,7 @@
 <script>
 import { mapGetters, mapState } from 'vuex'
 import TodoStackCss from './TodoStackCss'
+import TodoStack from './TodoStack'
 
 export default {
   name: 'todo-stacks',
