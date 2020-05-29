@@ -120,8 +120,8 @@ module.exports = function (ctx) {
         description: 'Put your deals in stacks',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#ffffff',
-        theme_color: '#027be3',
+        theme_color: "#ffd24b",
+        background_color: "#f3f3f3",
         icons: [
           {
             'src': 'statics/icons/icon-128x128.png',
