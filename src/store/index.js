@@ -7,7 +7,7 @@ import * as mutations from './mutations'
 import * as actionsBasic from './actionsBasic'
 import * as actionsHistory from './actionsHistory'
 import * as actionsFirebase from './actionsFirebase'
-import * as actionsPage from './actionsPage'
+import * as actionsUI from './actionsUI'
 import * as actionsComplex from './actionsComplex'
 
 Vue.use(Vuex)
@@ -25,7 +25,7 @@ export default function () {
       ...actionsBasic,
       ...actionsHistory,
       ...actionsFirebase,
-      ...actionsPage,
+      ...actionsUI,
       ...actionsComplex,
     },
     strict: process.env.DEV

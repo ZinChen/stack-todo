@@ -1,5 +1,11 @@
 import firebase from 'firebase'
-import { fireApp, todosRefGetter } from 'boot/fire.js'
+import {
+  fireApp,
+  settingsRefGetter,
+  todosRefGetter,
+  stacksRefGetter,
+  sampleItems
+} from 'boot/fire.js'
 
 export function toggleTodoDone ({ dispatch }, todo) {
   const update = {}
@@ -81,4 +87,38 @@ export function saveNewTodos ({ dispatch }, stacks) {
       dispatch('createTodo', stack)
     }
   })
+}
+
+export function addSampleItems () {
+  const settingsRef = settingsRefGetter()
+  const todosRef = todosRefGetter()
+  const stacksRef = stacksRefGetter()
+
+  const batch = fireApp.firestore().batch()
+
+  batch.set(settingsRef, {
+    isSampleAdded: true
+  })
+
+  sampleItems.stacks.forEach(stack => {
+    const stackRef = stacksRef.doc()
+    const stackTodos = sampleItems.todos.filter(todo => todo.stack == stack)
+
+    batch.set(stackRef, {
+      title: stack,
+      createdAt: new Date(),
+      deleted: false,
+    })
+    stackTodos.forEach((todo, index) => {
+      batch.set(todosRef.doc(), {
+        ...todo,
+        stackId: stackRef.id,
+        order: index,
+        createdAt: new Date(),
+        deleted: false,
+      })
+    })
+  })
+
+  return batch.commit()
 }

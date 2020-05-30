@@ -7,6 +7,11 @@ export default function () {
     todos: [],
     stacks: [],
     editorHistory: [],
+    fireState: {
+      settings: 'init',
+      stacks: 'init',
+      todos: 'init'
+    },
     pageState: {
       screen: 'stacks',
       mode: 'simple',
@@ -16,5 +21,6 @@ export default function () {
       }
     },
     user: {},
+    settings: {}
   }
 }

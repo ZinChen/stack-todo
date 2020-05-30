@@ -30,3 +30,7 @@ export function pushToHistory (state, historyItem) {
 export function popFromHistory (state) {
   state.editorHistory.pop()
 }
+
+export function setRefFireState (state, { ref, status }) {
+  state.fireState[ref] = status
+}

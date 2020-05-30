@@ -29,7 +29,7 @@ export default {
   components: { TodoStacks, TodoEditor, FabMenuStacks, FabMenuEditor },
   computed: {
     ...mapState([
-      'pageState'
+      'pageState',
     ])
   },
   created: function () {

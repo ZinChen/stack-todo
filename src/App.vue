@@ -61,6 +61,7 @@ export default {
         this.setAuthState('logged_in')
         this.setLoadingState('loaded')
         this.setUser(user)
+        this.bindFirestoreSettingsRef()
         this.bindFirestoreTodosRef()
         this.bindFirestoreStacksRef()
       }
@@ -87,6 +88,7 @@ export default {
       'setLoadingState',
     ]),
     ...mapActions([
+      'bindFirestoreSettingsRef',
       'bindFirestoreTodosRef',
       'bindFirestoreStacksRef',
       'unbindFirestoreRefs',

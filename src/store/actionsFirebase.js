@@ -1,8 +1,24 @@
 import { firestoreAction } from 'vuexfire'
-import { fireApp, todosRefGetter, stacksRefGetter } from 'boot/fire.js'
+import { todosRefGetter, stacksRefGetter, settingsRefGetter } from 'boot/fire.js'
+
+export const bindFirestoreSettingsRef = firestoreAction(({
+  bindFirestoreRef,
+  dispatch,
+}) => {
+  const settingsRef = settingsRefGetter()
+
+  return bindFirestoreRef(
+    'settings',
+    settingsRef
+  )
+    .then(data => {
+      dispatch('refReceived', 'settings')
+    })
+})
 
 export const bindFirestoreTodosRef = firestoreAction(({
   bindFirestoreRef,
+  dispatch,
 }) => {
   const todosRef = todosRefGetter()
 
@@ -13,12 +29,13 @@ export const bindFirestoreTodosRef = firestoreAction(({
       .orderBy('order')
   )
     .then(data => {
+      dispatch('refReceived', 'todos')
     })
 })
 
 export const bindFirestoreStacksRef = firestoreAction(({
   bindFirestoreRef,
-  commit,
+  dispatch,
 }) => {
   const stacksRef = stacksRefGetter()
 
@@ -29,6 +46,7 @@ export const bindFirestoreStacksRef = firestoreAction(({
       .orderBy('createdAt')
   )
     .then(data => {
+      dispatch('refReceived', 'stacks')
     })
 })
 
