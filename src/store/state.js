@@ -20,7 +20,12 @@ export default function () {
         item: null
       }
     },
+    toolbar: {
+      aboutModal: false,
+      pwaButton: false,
+      pwaEvent: null,
+    },
     user: {},
-    settings: {}
+    settings: {},
   }
 }

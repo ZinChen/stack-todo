@@ -28,6 +28,14 @@ export function refReceived ({ state, commit, dispatch }, ref) {
 
   if (isAllRefsLoaded && !settings.isSampleAdded) {
     dispatch('addSampleItems')
-    console.log('addingSimpleTodos')
   }
+}
+
+export function onPWAInstall ({ state, commit }) {
+  const { pwaEvent } = state.toolbar
+  pwaEvent && pwaEvent.prompt().then((result) => {
+    if (result.outcome == 'accepted') {
+      commit('setPWAEvent', false)
+    }
+  })
 }

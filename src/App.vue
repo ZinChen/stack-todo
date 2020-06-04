@@ -7,22 +7,7 @@
       preloader(
         v-show="loadingState == 'loading'"
       )
-    q-toolbar.bg-white
-      q-avatar.bg-grey
-        img.toolbar-avatar(
-          v-if="user.photoURL"
-          :src="user.photoURL"
-        )
-        q-menu
-          q-list(dense)
-            q-item
-              q-item-section(
-                clickable
-                @click="logout"
-              ) Logout
-
-      q-toolbar-title
-        | {{ user.email }}
+    toolbar
 
     router-view
 </template>
@@ -32,6 +17,7 @@ import { mapState, mapMutations, mapActions } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 import firebase from 'firebase'
 import Preloader from 'components/Preloader'
+import Toolbar from 'components/Toolbar/Toolbar'
 
 const login = function () {
   // Read about auth types here: https://firebase.google.com/docs/auth/web/cordova
@@ -45,7 +31,7 @@ const login = function () {
 
 export default {
   name: 'App',
-  components: { Preloader },
+  components: { Preloader, Toolbar },
   computed: mapState([
     'loadingState',
     'user'
@@ -57,7 +43,6 @@ export default {
       if (isEmpty(user)) {
         login()
       } else if (user) {
-        console.log('user in App', user)
         this.setAuthState('logged_in')
         this.setLoadingState('loaded')
         this.setUser(user)
@@ -66,26 +51,31 @@ export default {
         this.bindFirestoreStacksRef()
       }
     })
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      this.setPWAButton(true)
+      this.setPWAEvent(e)
+      // Prevent the mini-infobar from appearing on mobile
+      // e.preventDefault();
+      // Stash the event so it can be triggered later.
+      // deferredPrompt = e;
+      // Update UI notify the user they can install the PWA
+      // showInstallPromotion();
+    })
+    window.addEventListener('appinstalled', () => {
+      console.log('===============')
+      console.log('app installed')
+      this.setPWAButton(false)
+    })
   },
   methods: {
-    logout: function () {
-      firebase.auth().signOut().then(() => {
-        this.setAuthState('logout')
-        this.setLoadingState('loading')
-        this.setUser({})
-        this.unbindFirestoreRefs()
-      }, (error) => {
-        console.log('error on logout: ', error)
-      })
-    },
     login,
-    test: function () {
-      console.log('just for test')
-    },
     ...mapMutations([
       'setUser',
       'setAuthState',
       'setLoadingState',
+      'setPWAButton',
+      'setPWAEvent'
     ]),
     ...mapActions([
       'bindFirestoreSettingsRef',

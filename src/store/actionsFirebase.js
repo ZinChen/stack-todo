@@ -1,5 +1,17 @@
 import { firestoreAction } from 'vuexfire'
 import { todosRefGetter, stacksRefGetter, settingsRefGetter } from 'boot/fire.js'
+import firebase from 'firebase'
+
+export const logout = ({ dispatch }) => {
+  firebase.auth().signOut().then(() => {
+    dispatch('setAuthState', 'logout')
+    dispatch('setLoadingState', 'loading')
+    dispatch('setUser', {})
+    dispatch('unbindFirestoreRefs')
+  }, (error) => {
+    console.log('error on logout: ', error)
+  })
+}
 
 export const bindFirestoreSettingsRef = firestoreAction(({
   bindFirestoreRef,

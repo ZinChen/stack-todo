@@ -34,3 +34,16 @@ export function popFromHistory (state) {
 export function setRefFireState (state, { ref, status }) {
   state.fireState[ref] = status
 }
+
+export function toggleAbout (state) {
+  const { aboutModal } = state.toolbar
+  state.toolbar.aboutModal = !aboutModal
+}
+
+export function setPWAEvent (state, value) {
+  state.toolbar.pwaEvent = value
+}
+
+export function setPWAButton (state, value) {
+  state.toolbar.pwaButton = value
+}
