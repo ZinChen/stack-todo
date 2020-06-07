@@ -21,6 +21,7 @@
         q-icon.stack-bg-icon(
           name="emoji_events"
         )
+      //- transition-group will ruine animationend calllbacks
       .stack-todo-item(
         v-for="todo in todos.slice().reverse()"
         :key="todo.id"
@@ -65,9 +66,7 @@ export default {
       const delay = this.todos.length - index
       const animationDelay = delay / 10 + 's'
       this.$set(this.todoProps, todo.id, { class: ['appear'], style: { animationDelay } })
-      this.setTodoAnimationCallback(todo, () => {
-        this.$set(this.todoProps[todo.id], 'class', ['dummy'])
-      })
+      // Animation end callback in "mounted"
     })
 
     this.$watch('todos', (newItems, oldItems) => {
@@ -76,7 +75,7 @@ export default {
       const deleted = oldItems.filter(todo => !newIds.includes(todo.id))
       const added = newItems.filter(todo => !oldIds.includes(todo.id))
 
-      // TODO: Track order changing
+      // TODO: Track order changing <== define swiping
       if (deleted.length) {
         deleted.forEach(todo => {
           if ((this.todoProps[todo.id] || {}).class == 'done') {
@@ -94,9 +93,12 @@ export default {
           const todoClass = todo.doneDate ? 'undone' : 'appear'
           this.$set(this.todoProps[todo.id], 'class', [todoClass])
 
-          this.setTodoAnimationCallback(todo, () => {
-            this.$set(this.todoProps[todo.id], 'class', ['dummy'])
-          })
+          // Weird waiting for mounting
+          setTimeout(() => {
+            this.setTodoAnimationCallback(todo, () => {
+              this.$set(this.todoProps, todo.id, { class: ['dummy'], style: {} })
+            })
+          }, 100)
         })
       }
     })
@@ -104,20 +106,21 @@ export default {
   mounted () {
     this.todos.forEach((todo, index) => {
       this.setTodoAnimationCallback(todo, () => {
-        this.$set(this.todoProps, todo.id, { class: [], style: {} })
+        this.$set(this.todoProps, todo.id, { class: ['dummy'], style: {} })
       })
     })
   },
   methods: {
     setTodoAnimationCallback (todo, callback) {
       const todoRef = (this.$refs[`todoRef${todo.id}`] || [ false ])[0]
+
       todoRef && todoRef.addEventListener('animationend', () => {
         callback()
       }, { once: true })
     },
     showDeletion (todo) {
       this.todos.unshift(todo)
-      this.$set(this.todoProps[todo.id], 'class', [ 'done' ])
+      this.$set(this.todoProps[todo.id], 'class', ['done'])
       this.setTodoAnimationCallback(todo, () => {
         const todoIndex = this.todos.findIndex(t => t.id == todo.id)
         this.todos.splice(todoIndex, 1)
