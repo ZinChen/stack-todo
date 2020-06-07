@@ -65,6 +65,9 @@ export default {
       const delay = this.todos.length - index
       const animationDelay = delay / 10 + 's'
       this.$set(this.todoProps, todo.id, { class: ['appear'], style: { animationDelay } })
+      this.setTodoAnimationCallback(todo, () => {
+        this.$set(this.todoProps[todo.id], 'class', ['dummy'])
+      })
     })
 
     this.$watch('todos', (newItems, oldItems) => {
@@ -92,7 +95,7 @@ export default {
           this.$set(this.todoProps[todo.id], 'class', [todoClass])
 
           this.setTodoAnimationCallback(todo, () => {
-            this.$set(this.todoProps[todo.id], 'class', [])
+            this.$set(this.todoProps[todo.id], 'class', ['dummy'])
           })
         })
       }
@@ -151,7 +154,7 @@ export default {
       this.$set(this.todoProps[todo.id], 'class', ['swap'])
       // workaround for list with 2 items
       if (this.todos.length == 2) {
-        this.$set(this.todoProps[nextTodo.id], 'class', ['something'])
+        this.$set(this.todoProps[nextTodo.id], 'class', ['dummy'])
       }
 
       this.$store.dispatch('swapTodo', this.stack)
@@ -164,7 +167,7 @@ export default {
 
       // workaround for list with 2 items
       if (this.todos.length == 2) {
-        this.$set(this.todoProps[todo.id], 'class', ['something'])
+        this.$set(this.todoProps[todo.id], 'class', ['dummy'])
       }
 
       this.$store.dispatch('swapTodoBack', this.stack)
