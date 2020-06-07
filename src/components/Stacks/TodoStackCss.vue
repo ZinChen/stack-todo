@@ -22,7 +22,7 @@
           name="emoji_events"
         )
       .stack-todo-item(
-        v-for="todo in todosReversed"
+        v-for="todo in todos.slice().reverse()"
         :key="todo.id"
         :ref="`todoRef${todo.id}`"
         :class="todoClass(todo)"
@@ -56,11 +56,6 @@ export default {
       directionSign: 1,
       todoProps: {}, // id: { class, style }
     }
-  },
-  computed: {
-    todosReversed () {
-      return this.todos.slice().reverse()
-    },
   },
   created () {
     // TODO: create another array to show todos <--
