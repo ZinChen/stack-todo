@@ -2,6 +2,8 @@
 
 Put your deals in stacks
 
+<http://stack-todo.now.sh/>
+
 ## Install the dependencies
 ```bash
 yarn
