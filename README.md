@@ -2,7 +2,7 @@
 
 Put your deals in stacks
 
-<http://stack-todo.vercel.app/>
+<http://stack-todo-zinchen.vercel.app/>
 
 ## Install the dependencies
 ```bash
