@@ -19,7 +19,7 @@
     "firebase": "^7.10.0",
     "gsap": "^3.2.6",
     "lodash": "^4.17.15",
-    "pug": "^2.0.4",
+    "pug": "^3.0.1",
     "pug-loader": "^2.4.0",
     "pug-plain-loader": "^1.0.0",
     "quasar": "^1.0.0",
