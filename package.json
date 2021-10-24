@@ -8,6 +8,8 @@
   "author": "Yuri Zinchenko <zinchen777@gmail.com>",
   "private": true,
   "scripts": {
+    "build": "quasar build",
+    "deploy": "vercel",
     "lint": "eslint --ext .js,.vue src",
     "test": "echo \"No test specified\" && exit 0"
   },
@@ -21,6 +23,7 @@
     "pug-loader": "^2.4.0",
     "pug-plain-loader": "^1.0.0",
     "quasar": "^1.0.0",
+    "vercel": "^23.1.2",
     "vue-i18n": "^8.0.0",
     "vue2-touch-events": "^2.2.1",
     "vuefire": "^2.2.1",
