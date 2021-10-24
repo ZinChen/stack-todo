@@ -24,6 +24,7 @@
       //- transition-group will ruine animationend calllbacks
       .stack-todo-item(
         v-for="todo in todos.slice().reverse()"
+        :id="todo.id"
         :key="todo.id"
         :ref="`todoRef${todo.id}`"
         :class="todoClass(todo)"
@@ -33,7 +34,7 @@
       )
         .stack-todo-item-content {{ todo.title }}
 
-    .stack-todo-item.stack-todo-item-ghost
+      .stack-todo-item.stack-todo-item-ghost
 </template>
 
 <style lang="sass">

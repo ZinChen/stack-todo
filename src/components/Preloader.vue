@@ -193,7 +193,7 @@ export default {
   name: 'preloader',
   data: function () {
     return {
-      mode: 'freezed' // 'full', 'simple', 'freezed ,'static'
+      mode: 'full' // 'full', 'simple', 'freezed ,'static'
     }
   }
 }

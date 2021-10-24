@@ -38,7 +38,6 @@ export default {
   ]),
   // TODO: Try to use signup with login and password if it's not web
   beforeCreate: function () {
-    // firebase.auth().getRedirectResult()
     firebase.auth().onAuthStateChanged((user) => {
       if (isEmpty(user)) {
         login()
@@ -63,8 +62,6 @@ export default {
       // showInstallPromotion();
     })
     window.addEventListener('appinstalled', () => {
-      console.log('===============')
-      console.log('app installed')
       this.setPWAButton(false)
     })
   },
